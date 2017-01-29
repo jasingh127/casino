@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+
+    <link rel="stylesheet" href="../css/third_party/plottable.css">
+    <link rel="stylesheet" href="../css/third_party/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/third_party/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="../css/third_party/jquery.dataTables-1.10.0.css">
+    <link rel="stylesheet" href="../css/third_party/scroller.dataTables.min.css">
+    <link rel="stylesheet" href="../css/third_party/jquery-ui.css">
+
+    <script type="text/javascript" src="../js/third_party/jquery-2.2.0.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/d3.v3.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/d3.tip.v0.6.3.js"></script>
+    <script type="text/javascript" src="../js/third_party/jquery.dataTables-1.10.0.js"></script>
+    <script type="text/javascript" src="../js/third_party/dataTables.scroller.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/plottable.js"></script>
+    <script type="text/javascript" src="../js/third_party/d3-jetpack.js"></script>
+    <script type="text/javascript" src="../js/third_party/gunzip.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/underscore-min.js"></script>
+    <script type="text/javascript" src="../js/third_party/jquery-ui.js"></script>
+
+    <script type="text/javascript" src="../js/dbutil.js"></script>
+    <script type="text/javascript" src="../js/plottableutil.js"></script>
+
+    <script>
+    // Global variables
+    var occupancy_chart;
+    var occupancy_dataset;
+    var game_chart;
+    var game_dataset;
+    </script>
+    
+    <script>
+      $( function() { 
+        $("#datepicker").datepicker({
+            dateFormat: "mm/dd/yy",
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            autoclose: true,
+            changeMonth: true,
+            changeYear: true,
+            beforeShow: function (input, inst) {
+              setTimeout(function () {
+                var offsets = $("#datepicker").offset();
+                var h = $("#datepicker").outerHeight();
+                inst.dpDiv.css({
+                  top: offsets.top + h,
+                  left: offsets.left
+                });
+              },0);
+            },
+            onSelect: function(dateText) {
+              var date = $(this).datepicker('getDate');
+              var year = date.getFullYear();
+              var month = date.getMonth();
+              var day = date.getDate();
+              var occupancy_refresh_callback = function (data) {
+                occupancy_dataset.data(data);
+                occupancy_chart.renderTo("#occupancy");
+              };
+              DbUtil.fetchOccupancy({"year":year, "month": month, "day":day}, occupancy_refresh_callback);
+            }      
+        });      
+      });
+    </script>
+
+</head>
+
+<body>
+  <svg id="occupancy" width=90% height="600"></svg>
+  <br>
+  <br>
+  <svg id="game_list" width=50% height="60"></svg>
+  <br>
+  <br>
+  <p> Date: <input type="text" id="datepicker"></p>
+  <script>
+    var today = new Date();
+    var year = today.getFullYear();
+    var month = today.getMonth();
+    var day = today.getDate();
+    
+    $(function() {
+      $("#datepicker").val(today.toLocaleDateString()); 
+
+      var occupancy_callback = function (data) {
+        var chart_data = PlottableUtil.OccupancyChart(data);
+        occupancy_chart = chart_data.chart;
+        occupancy_dataset = chart_data.dataset;
+        occupancy_chart.renderTo("#occupancy");
+      };
+      DbUtil.fetchOccupancy({"year":year, "month": month, "day":day}, occupancy_callback);
+
+      var game_callback = function(data) {
+        var chart_data = PlottableUtil.GameChart(data);
+        game_chart = chart_data.chart;
+        game_dataset = chart_data.dataset;
+        game_chart.renderTo("#game_list");
+      };
+      DbUtil.fetchGames(game_callback);
+
+    });
+  </script>
+</body>
