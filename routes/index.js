@@ -1,3 +1,4 @@
+// Server side code
 
 /************************************************************************
  Rest API for getting HTML views.

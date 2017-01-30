@@ -1,13 +1,11 @@
+// Main Server side application code
 
-/**
- * Module dependencies.
- */
-
-var express = require('express')
-var routes = require('./routes')
+// Module dependencies
+var express = require('express');
+var routes = require('./routes');
 var path = require('path');
 var sqlite = require('sqlite3').verbose();
-var fs = require('fs')
+var fs = require('fs');
 
 var app = express();
 app.set('port', process.env.PORT || 3000);
@@ -15,8 +13,8 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 app.use(express.static(__dirname));
-var cors = require('cors')
-app.use(cors())
+var cors = require('cors');
+app.use(cors());
 
 // Initialize DB
 function createDatabase() {

@@ -1,3 +1,4 @@
+// Client side code
 var PlottableUtil = {
 
     TimeScale: function() {
@@ -92,8 +93,6 @@ var PlottableUtil = {
         interaction.onClick(function(point) {
           var selection = plot1.entitiesAt(point)[0].selection;
           selection.attr("fill", "#F99D42");
-          console.log(plot1.entityNearest(point).datum.x)
-          console.log(plot1.entityNearest(point).datum.y)
         });
         interaction.attachTo(plot1);
 
@@ -109,14 +108,13 @@ var PlottableUtil = {
 
         var xAccessor = function(d) { return d.desc; }
         var yAccessor = function(d) { return 1; }
-        var valAccessor = function(d) { return d.id; }
 
         var dataset = new Plottable.Dataset(data);
 
-        var colorScale = new Plottable.Scales.InterpolatedColor();
-        colorScale.range(["#eee", "#d6e685", "#8cc665", "#44a340", "#1e6823"]);
+        var colorScale = ["#FFFFFF", "#FF0000", "#FF00FF", "#FFFF00", "#F0FFF0", "#0FF0FF"];
+        var colorAccessor = function(d) { return colorScale[d.id]; }
 
-        var plot = new PlottableUtil.RectPlot(dataset, xAccessor, yAccessor, valAccessor, xScale, yScale, colorScale);
+        var plot = new PlottableUtil.RectPlot(dataset, xAccessor, yAccessor, colorAccessor, xScale, yScale);
         plot.attr("stroke", "#fff")
         plot.attr("stroke-width", 5);
 
