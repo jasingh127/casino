@@ -11,13 +11,13 @@ var DbUtil = {
   },
 
   insertTables: function (record) {
-    $.post(MiscUtil.db_server_address + "insertTables",
+    $.post(MiscUtil.db_server_address + "/insertTables",
       JSON.stringify(record),
       function(data, status){alert(data);});
   },
 
   insertGames: function (record) {
-    $.post(MiscUtil.db_server_address + "insertGames",
+    $.post(MiscUtil.db_server_address + "/insertGames",
       JSON.stringify(record),
       function(data, status){alert(data);});
   },

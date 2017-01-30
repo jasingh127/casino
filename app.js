@@ -36,5 +36,5 @@ app.post('/insertTables', routes.insertOccupancy);
 app.post('/insertGames', routes.insertOccupancy);
 
 app.listen(app.get('port'), function(){
-  console.log("Express server listening on port " + app.get('port'));
+  console.log("Casino app listening on port " + app.get('port'));
 });
