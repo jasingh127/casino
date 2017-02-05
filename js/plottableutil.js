@@ -73,7 +73,7 @@ var PlottableUtil = {
         var yScale = PlottableUtil.CategoryScale();
         var yAxis = PlottableUtil.CategoryAxis(yScale, "left");
 
-        var colorScale = ["#FFFFFF", "#FF0000", "#FF00FF", "#FFFF00", "#F0FFF0", "#0FF0FF"];
+        var colorScale = shared_data.game_colorScale;
         var xAccessor = function(d) { return d.x; }
         var x2Accessor = function(d) { return d.x2; }
         var yAccessor = function(d) { return d.y; }
@@ -103,6 +103,7 @@ var PlottableUtil = {
             if (entity) {
               var record = entity[0].datum;
               if (shared_data.picked_game >= 0) {
+                
                 // Modify the raw occupancy data and refresh the occupancy chart
                 // First we need to search the raw occupancy data to find the correct record
                 var matches = $.grep(shared_data.occupancy_raw_data, 
@@ -110,7 +111,21 @@ var PlottableUtil = {
                 var match = matches[0]; // has to be a single match
                 match.val = shared_data.picked_game;
                 PlottableUtil.refreshOccupancyChart(shared_data);
-                // TODO: Send a request to add game to DB
+                
+                // Convert matched record format and send update request to DB
+                var db_update_record = {
+                    "table_id":    match.table_id,
+                    "game_id":     match.val,
+                    "year":        match.year,
+                    "month":       match.month,
+                    "day":         match.day,
+                    "start_hour":  match.start_hour,
+                    "start_mins":  match.start_mins,
+                    "end_hour":    match.end_hour,
+                    "end_mins":    match.end_mins
+                };
+                // console.log(db_update_record);
+                DbUtil.insertOccupancy(db_update_record);
               };
             };
         });
@@ -171,7 +186,7 @@ var PlottableUtil = {
         var data = shared_data.game_raw_data;
         var dataset = new Plottable.Dataset(data);
 
-        var colorScale = ["#FFFFFF", "#FF0000", "#FF00FF", "#FFFF00", "#F0FFF0", "#0FF0FF"];
+        var colorScale = shared_data.game_colorScale;
         var colorAccessor = function(d) { return colorScale[d.id]; }
 
         var plot = new Plottable.Plots.Rectangle()

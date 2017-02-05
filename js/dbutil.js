@@ -6,20 +6,20 @@ var DbUtil = {
 
   insertOccupancy: function (record) {
     $.post(MiscUtil.db_server_address + "/insertOccupancy",
-      JSON.stringify(record),
-      function(data, status){alert(data);});
+      record,
+      function(data, status){console.log(data);});
   },
 
   insertTables: function (record) {
     $.post(MiscUtil.db_server_address + "/insertTables",
-      JSON.stringify(record),
-      function(data, status){alert(data);});
+      record,
+      function(data, status){console.log(data);});
   },
 
   insertGames: function (record) {
     $.post(MiscUtil.db_server_address + "/insertGames",
-      JSON.stringify(record),
-      function(data, status){alert(data);});
+      record,
+      function(data, status){console.log(data);});
   },
 
   fetchOccupancy: function (params, callback) {
@@ -30,10 +30,21 @@ var DbUtil = {
         for (var i=0; i < data["rows"].length; i++) {
           var row = data["rows"][i];
           var record = {
-            x:    new Date(row["year"], row["month"], row["day"], row["start_hour"], row["start_mins"]),
-            x2:   new Date(row["year"], row["month"], row["day"], row["end_hour"], row["end_mins"]),
-            y:    row["table_desc"],
-            val:  row["game_id"]
+            x:          new Date(row["year"], row["month"], row["day"], row["start_hour"], row["start_mins"]),
+            x2:         new Date(row["year"], row["month"], row["day"], row["end_hour"], row["end_mins"]),
+            y:          row["table_desc"],
+            val:        row["game_id"],
+
+            // Additional params kept just for reuse convenience when sending back db update messages
+
+            year:       row["year"],
+            month:      row["month"],
+            day:        row["day"],
+            start_hour: row["start_hour"],
+            start_mins: row["start_mins"],
+            end_hour:   row["end_hour"],
+            end_mins:   row["end_mins"],
+            table_id:   row["table_id"],
           }
           plot_data.push(record);
         }
