@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
+<meta http-equiv="refresh" content="60" >
 <head>
 
     <link rel="stylesheet" href="../css/third_party/plottable.css">
@@ -26,11 +27,17 @@
     <script type="text/javascript" src="../js/plottableutil.js"></script>
 
     <script>
-    // Global variables
-    var occupancy_chart;
-    var occupancy_dataset;
-    var game_chart;
-    var game_dataset;
+    // Shared persistent variables 
+    var timetable_data = { 
+      occupancy_chart: null,
+      occupancy_raw_data: null,
+      occupancy_chart_dataset: null,
+      occupancy_chart_xScale: null,
+      game_chart: null,
+      game_raw_data: null,
+      picked_game: -1
+    };
+
     </script>
     
     <script>
@@ -58,8 +65,9 @@
               var month = date.getMonth();
               var day = date.getDate();
               var occupancy_refresh_callback = function (data) {
-                occupancy_dataset.data(data);
-                occupancy_chart.renderTo("#occupancy");
+                timetable_data.occupancy_raw_data = data;
+                PlottableUtil.refreshOccupancyChart(timetable_data);
+                timetable_data.occupancy_chart.renderTo("#occupancy");
               };
               DbUtil.fetchOccupancy({"year":year, "month": month, "day":day}, occupancy_refresh_callback);
             }      
@@ -74,7 +82,7 @@
   <br>
   <br>
   <br>
-  <svg id="occupancy" width=200% height="600"></svg>
+  <svg id="occupancy" width=150% height="600"></svg>
   <br>
   <br>
   <svg id="game_list" width=50% height="60"></svg>
@@ -91,18 +99,16 @@
       $("#datepicker").val(today.toLocaleDateString()); 
 
       var occupancy_callback = function (data) {
-        var chart_data = PlottableUtil.OccupancyChart(data);
-        occupancy_chart = chart_data.chart;
-        occupancy_dataset = chart_data.dataset;
-        occupancy_chart.renderTo("#occupancy");
+        timetable_data.occupancy_raw_data = data;
+        PlottableUtil.OccupancyChart(timetable_data);
+        timetable_data.occupancy_chart.renderTo("#occupancy");
       };
       DbUtil.fetchOccupancy({"year":year, "month": month, "day":day}, occupancy_callback);
 
       var game_callback = function(data) {
-        var chart_data = PlottableUtil.GameChart(data);
-        game_chart = chart_data.chart;
-        game_dataset = chart_data.dataset;
-        game_chart.renderTo("#game_list");
+        timetable_data.game_raw_data = data;
+        PlottableUtil.GameChart(timetable_data);
+        timetable_data.game_chart.renderTo("#game_list");
       };
       DbUtil.fetchGames(game_callback);
 

@@ -49,28 +49,27 @@ var PlottableUtil = {
 
     },
 
-    Guideline: function(xScale) {
-        var guideline = new Plottable.Components.GuideLineLayer(
-             Plottable.Components.GuideLineLayer.ORIENTATION_VERTICAL)
-             .scale(xScale);
-        return guideline;
-    },
-
-    OccupancyChart: function (data) {
+    OccupancyChart: function (shared_data) {
+        // xScale
         var xScale = new Plottable.Scales.Time();
         x_start = [];
         x_end = [];
+        var data = shared_data.occupancy_raw_data;
         for (var i=0; i < data.length; i++) {
             x_start.push(data[i].x);
             x_end.push(data[i].x2);
         }
         x_min = _.min(x_start);
         x_max = _.max(x_end);
-
         xScale.domain([x_min, x_max]);
-        var xAxis = new Plottable.Axes.Time(xScale, "bottom");
-        // xAxis.formatter(Plottable.Formatters.multiTime());
 
+        // xAxis
+        var xAxis = new Plottable.Axes.Time(xScale, "bottom")
+          .margin(5)
+          .annotationsEnabled(true)
+          .annotationFormatter(function(d) { return d.toLocaleTimeString() });
+
+        // yScale and yAxis
         var yScale = PlottableUtil.CategoryScale();
         var yAxis = PlottableUtil.CategoryAxis(yScale, "left");
 
@@ -82,6 +81,7 @@ var PlottableUtil = {
 
         var dataset = new Plottable.Dataset(data);
 
+        // Main rectangle plot
         var plot = new Plottable.Plots.Rectangle()
           .addDataset(dataset)
           .x(xAccessor, xScale)
@@ -89,19 +89,39 @@ var PlottableUtil = {
           .y(yAccessor, yScale)
           .attr("fill", colorAccessor);
 
-        var guideline = PlottableUtil.Guideline(xScale);
+        // Guideline to show current time
+        var now_date_time = new Date();
+        var guideline = new Plottable.Components.GuideLineLayer("vertical")
+          .scale(xScale)
+          .value(now_date_time);
+        xAxis.annotatedTicks([now_date_time]);
 
+        // Mouse click interactions
         var click_interaction = new Plottable.Interactions.Click();
         click_interaction.onClick(function(point) {
-          var selection = plot.entitiesAt(point)[0].selection;
-          selection.attr("fill", "#F99D42");
+            var entity = plot.entitiesAt(point);
+            if (entity) {
+              var record = entity[0].datum;
+              if (shared_data.picked_game >= 0) {
+                // Modify the raw occupancy data and refresh the occupancy chart
+                // First we need to search the raw occupancy data to find the correct record
+                var matches = $.grep(shared_data.occupancy_raw_data, 
+                    function(e){ return (e.x === record.x && e.x2 === record.x2 && e.y === record.y); });
+                var match = matches[0]; // has to be a single match
+                match.val = shared_data.picked_game;
+                PlottableUtil.refreshOccupancyChart(shared_data);
+                // TODO: Send a request to add game to DB
+              };
+            };
         });
         click_interaction.attachTo(plot);
 
+        // Mouse hover interactions
         var move_interaction = new Plottable.Interactions.Pointer();
         move_interaction.onPointerMove(function(point) {
-            var nearest = plot.entityNearest(point);
-            guideline.value(nearest.datum.x);
+            var closest = plot.entityNearest(point);
+        });
+        move_interaction.onPointerExit(function(point) {
         });
         move_interaction.attachTo(plot);
 
@@ -110,10 +130,35 @@ var PlottableUtil = {
                           [yAxis, plots],
                           [null,  xAxis]
                         ]);
-        return {chart: chart, dataset: dataset};
+
+        // pan/zoom
+        var panZoom = new Plottable.Interactions.PanZoom(xScale, null);
+        panZoom.attachTo(plots);
+
+        // Update shared_data
+        shared_data.occupancy_chart = chart;
+        shared_data.occupancy_chart_dataset = dataset;
+        shared_data.occupancy_chart_xScale = xScale;
     },
 
-    GameChart: function (data) {
+    refreshOccupancyChart: function (shared_data) {
+        // raw data changed, so refresh dataset and xScale domain
+        shared_data.occupancy_chart_dataset.data(shared_data.occupancy_raw_data);
+
+        var xScale = shared_data.occupancy_chart_xScale;
+        x_start = [];
+        x_end = [];
+        var data = shared_data.occupancy_raw_data;
+        for (var i=0; i < data.length; i++) {
+            x_start.push(data[i].x);
+            x_end.push(data[i].x2);
+        }
+        x_min = _.min(x_start);
+        x_max = _.max(x_end);
+        xScale.domain([x_min, x_max]);
+    },
+
+    GameChart: function (shared_data) {
         var xScale = PlottableUtil.CategoryScale();
         var xAxis = PlottableUtil.CategoryAxis(xScale, "bottom");
 
@@ -123,6 +168,7 @@ var PlottableUtil = {
         var xAccessor = function(d) { return d.desc; }
         var yAccessor = function(d) { return 1; }
 
+        var data = shared_data.game_raw_data;
         var dataset = new Plottable.Dataset(data);
 
         var colorScale = ["#FFFFFF", "#FF0000", "#FF00FF", "#FFFF00", "#F0FFF0", "#0FF0FF"];
@@ -136,18 +182,31 @@ var PlottableUtil = {
           .attr("stroke", "#fff")
           .attr("stroke-width", 5);
 
+        var highlighter = new Plottable.Plots.Rectangle()
+          .addDataset(dataset)
+          .x(xAccessor, xScale)
+          .y(yAccessor, yScale)
+          .attr("fill", "black")
+          .attr("fill-opacity", 0);
+
         var interaction = new Plottable.Interactions.Click();
         interaction.onClick(function(point) {
-          var selection = plot.entitiesAt(point)[0].selection;
-          selection.attr("fill", "#F99D42");
+          shared_data.picked_game = plot.entitiesAt(point)[0].datum.id; // Update shared_data
+          var nearest = highlighter.entityNearest(point);
+          highlighter.entities().forEach(function(entity) {
+                entity.selection.attr("fill-opacity", 0);
+          });
+          nearest.selection.attr("fill-opacity", 0.3);
         });
         interaction.attachTo(plot);
 
+        var plots = new Plottable.Components.Group([xAxis, highlighter]);
         var chart = new Plottable.Components.Table([
                           [yAxis, plot],
-                          [null,  xAxis]
+                          [null,  plots]
                         ]);
 
-        return {chart: chart, dataset: dataset};
+        // Update shared_data
+        shared_data.game_chart = chart;
     }
 };
