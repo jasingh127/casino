@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<meta http-equiv="refresh" content="60" >
 <head>
 
     <link rel="stylesheet" href="../css/third_party/plottable.css">
@@ -95,9 +94,28 @@
     var month = today.getMonth();
     var day = today.getDate();
     
+    // Document ready function below
     $(function() {
+
+      // Automatically refresh the page if no user activity happens for N_REFRESH_SECS seconds
+      var N_REFRESH_SECS = 120;
+      var last_refresh_time = new Date().getTime();
+      $(document.body).bind("mousemove keypress", function(e) {
+        last_refresh_time = new Date().getTime();
+      });
+
+      function refresh() {
+        if(new Date().getTime() - last_refresh_time >= N_REFRESH_SECS*1000) 
+          window.location.reload(true);
+        else 
+          setTimeout(refresh, 20000);
+      }
+      setTimeout(refresh, 20000);
+
+      // Change the calender input-box to today's date
       $("#datepicker").val(today.toLocaleDateString()); 
 
+      // Fetch occupancy data for today from the database and show
       var occupancy_callback = function (data) {
         timetable_data.occupancy_raw_data = data;
         PlottableUtil.OccupancyChart(timetable_data);
@@ -105,6 +123,7 @@
       };
       DbUtil.fetchOccupancy({"year":year, "month": month, "day":day}, occupancy_callback);
 
+      // Also, show the game picker table
       var game_callback = function(data) {
         timetable_data.game_raw_data = data;
         PlottableUtil.GameChart(timetable_data);
