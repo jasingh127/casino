@@ -51,14 +51,16 @@ exports.fetchOccupancy = function(req, res){
   var year = Number(req.body.year)
   var month = Number(req.body.month)
   var day = Number(req.body.day)
-   db.all("SELECT * FROM OCCUPANCY INNER JOIN TABLES ON OCCUPANCY.table_id = TABLES.table_id \
+  db.all("SELECT * FROM OCCUPANCY INNER JOIN TABLES ON OCCUPANCY.table_id = TABLES.table_id \
     WHERE year = ? AND month = ? AND day = ?", year, month, day, 
     function (err, rows) {
-      // add hour, mins field as well for convinience
+      // add hour, mins field as well for convenience
       for (var i = 0; i < rows.length; i++) {
         var hour_mins = exports.day_chunk_to_hour_min(rows[i]["day_chunk"]);
-        rows[i]["hour"] = hour_mins.hour;
-        rows[i]["mins"] = hour_mins.mins;
+        rows[i]["start_hour"] = hour_mins.start_hour;
+        rows[i]["start_mins"] = hour_mins.start_mins;
+        rows[i]["end_hour"] = hour_mins.end_hour;
+        rows[i]["end_mins"] = hour_mins.end_mins;
       }
       res.json({"rows": rows});
     }
@@ -101,8 +103,8 @@ exports.refreshDb = function(req, res){
     var query = "CREATE TABLE IF NOT EXISTS TABLES (table_id INTEGER, table_desc TEXT)"
     db.run(query)
 
-    var N_TABLES = 10;
-    var N_GAMES = 6;
+    var N_TABLES = 6;
+    var N_GAMES = 4;
     
     // Delete existing data
     db.run("DELETE FROM OCCUPANCY");
@@ -116,15 +118,16 @@ exports.refreshDb = function(req, res){
 
     var stmt = db.prepare("INSERT INTO GAMES VALUES (?, ?)");
     stmt.run(0, "Empty"); // Game Id 0 is reserved for no game/empty table
-    for (var i = 1; i < N_GAMES; i++) {
+    for (var i = 1; i <= N_GAMES; i++) {
         stmt.run(i, "Game " + i);
     }
 
     // Insert dummy occupancy data for each day in the duration below
-    var start_date = new Date(2016, 10, 20);  
+    var start_date = new Date(2017, 0, 20);  
     var now = new Date();
     var game_id = 0;
     var PERSISTENCE_PROB = 0.7;
+    var EMPTY_PROB = 0.7;
     var itrs = 0;
     for (var d = start_date; d <= now; d.setDate(d.getDate() + 1)) {
       for (var table_id = 0; table_id < N_TABLES; table_id++)
@@ -132,7 +135,11 @@ exports.refreshDb = function(req, res){
           if (Math.random() < PERSISTENCE_PROB)
             game_id = game_id; // do nothing
           else
-            game_id = (game_id + 1) % N_GAMES;
+            if (Math.random() < EMPTY_PROB)
+              game_id = 0;
+            else
+              game_id = exports.random_int(1, N_GAMES)
+          game_id = (table_id + day_chunk) % N_GAMES; //debug
 
           var year = d.getFullYear();
           var month = d.getMonth();
@@ -156,8 +163,14 @@ exports.refreshDb = function(req, res){
 exports.N_DAY_CHUNKS = 48; // half hour chunks
 
 exports.day_chunk_to_hour_min = function(chunk) {
-  var hour = Math.floor(chunk*24/exports.N_DAY_CHUNKS);
+  var start_hour = Math.floor(chunk*24/exports.N_DAY_CHUNKS);
+  var end_hour = Math.floor((chunk+1)*24/exports.N_DAY_CHUNKS);
   var mins_per_chunk = 60*24/exports.N_DAY_CHUNKS;
-  var mins = chunk*mins_per_chunk - hour*60;
-  return {hour: hour, mins: mins}
+  var start_mins = chunk*mins_per_chunk - start_hour*60;
+  var end_mins = (chunk+1)*mins_per_chunk - end_hour*60;
+  return {start_hour: start_hour, start_mins: start_mins, end_hour: end_hour, end_mins: end_mins}
+}
+
+exports.random_int = function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 } 

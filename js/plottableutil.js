@@ -26,18 +26,18 @@ var PlottableUtil = {
     },
 
     LinePlot: function(dataset, xAccessor, yAccessor, xScale, yScale, lineColor, strokeWidth) {
-        var linePlot = new Plottable.Plots.Line();
-        linePlot.addDataset(dataset);
-        linePlot.x(xAccessor, xScale)
-        linePlot.y(yAccessor, yScale);
-        linePlot.attr("stroke", lineColor === null ? "#ffffff" : lineColor);
-        linePlot.attr("stroke-width", strokeWidth === null ? 3 : strokeWidth);
+        var linePlot = new Plottable.Plots.Line()
+            .addDataset(dataset)
+            .x(xAccessor, xScale)
+            .y(yAccessor, yScale)
+            .attr("stroke", lineColor === null ? "#ffff00" : lineColor)
+            .attr("stroke-width", strokeWidth === null ? 3 : strokeWidth);
         return linePlot;
     },
 
     ScatterPlot: function(dataset, xAccessor, yAccessor, xScale, yScale, lineColor, symbolSize) {
-        var scatterPlot = new Plottable.Plots.Scatter();
-        scatterPlot.addDataset(dataset)
+        var scatterPlot = new Plottable.Plots.Scatter()
+            .addDataset(dataset)
             .x(xAccessor, xScale)
             .y(yAccessor, yScale)
             .attr("stroke", lineColor === null ? "#ffffff" : lineColor)
@@ -49,62 +49,76 @@ var PlottableUtil = {
 
     },
 
-    RectPlot: function(dataset, xAccessor, yAccessor, colorAccessor, xScale, yScale) {
-
-        var rectPlot = new Plottable.Plots.Rectangle();
-        rectPlot.addDataset(dataset);
-        rectPlot.x(xAccessor, xScale);
-        rectPlot.y(yAccessor, yScale);
-        rectPlot.attr("fill", colorAccessor);
-        return rectPlot;
+    Guideline: function(xScale) {
+        var guideline = new Plottable.Components.GuideLineLayer(
+             Plottable.Components.GuideLineLayer.ORIENTATION_VERTICAL)
+             .scale(xScale);
+        return guideline;
     },
 
     OccupancyChart: function (data) {
         var xScale = new Plottable.Scales.Time();
+        x_start = [];
+        x_end = [];
+        for (var i=0; i < data.length; i++) {
+            x_start.push(data[i].x);
+            x_end.push(data[i].x2);
+        }
+        x_min = _.min(x_start);
+        x_max = _.max(x_end);
+
+        xScale.domain([x_min, x_max]);
         var xAxis = new Plottable.Axes.Time(xScale, "bottom");
-        xAxis.formatter(Plottable.Formatters.multiTime());
+        // xAxis.formatter(Plottable.Formatters.multiTime());
 
-        var xScale1 = new PlottableUtil.CategoryScale();
-        var xAxis1 = new PlottableUtil.CategoryAxis(xScale1, "top");
-
-        var yScale = new PlottableUtil.CategoryScale();
-        var yAxis = new PlottableUtil.CategoryAxis(yScale, "left");
+        var yScale = PlottableUtil.CategoryScale();
+        var yAxis = PlottableUtil.CategoryAxis(yScale, "left");
 
         var colorScale = ["#FFFFFF", "#FF0000", "#FF00FF", "#FFFF00", "#F0FFF0", "#0FF0FF"];
         var xAccessor = function(d) { return d.x; }
-        var xAccessor1 = function(d) { return d.x1; }
+        var x2Accessor = function(d) { return d.x2; }
         var yAccessor = function(d) { return d.y; }
         var colorAccessor = function(d) { return colorScale[d.val]; }
 
         var dataset = new Plottable.Dataset(data);
 
-        var plot = new PlottableUtil.LinePlot(dataset, xAccessor, yAccessor, xScale, yScale, null, null);
-        var plot1 = new PlottableUtil.RectPlot(dataset, xAccessor1, yAccessor, colorAccessor, xScale1, yScale);
+        var plot = new Plottable.Plots.Rectangle()
+          .addDataset(dataset)
+          .x(xAccessor, xScale)
+          .x2(x2Accessor, xScale)
+          .y(yAccessor, yScale)
+          .attr("fill", colorAccessor);
 
-        var plots = new Plottable.Components.Group([plot, plot1]);
+        var guideline = PlottableUtil.Guideline(xScale);
 
+        var click_interaction = new Plottable.Interactions.Click();
+        click_interaction.onClick(function(point) {
+          var selection = plot.entitiesAt(point)[0].selection;
+          selection.attr("fill", "#F99D42");
+        });
+        click_interaction.attachTo(plot);
+
+        var move_interaction = new Plottable.Interactions.Pointer();
+        move_interaction.onPointerMove(function(point) {
+            var nearest = plot.entityNearest(point);
+            guideline.value(nearest.datum.x);
+        });
+        move_interaction.attachTo(plot);
+
+        var plots = new Plottable.Components.Group([plot, guideline]);
         var chart = new Plottable.Components.Table([
-                          [null,  xAxis1],
                           [yAxis, plots],
                           [null,  xAxis]
                         ]);
-
-        var interaction = new Plottable.Interactions.Click();
-        interaction.onClick(function(point) {
-          var selection = plot1.entitiesAt(point)[0].selection;
-          selection.attr("fill", "#F99D42");
-        });
-        interaction.attachTo(plot1);
-
         return {chart: chart, dataset: dataset};
     },
 
     GameChart: function (data) {
-        var xScale = new PlottableUtil.CategoryScale();
-        var xAxis = new PlottableUtil.CategoryAxis(xScale, "bottom");
+        var xScale = PlottableUtil.CategoryScale();
+        var xAxis = PlottableUtil.CategoryAxis(xScale, "bottom");
 
-        var yScale = new PlottableUtil.CategoryScale();
-        var yAxis = new PlottableUtil.CategoryAxis(yScale, "left");
+        var yScale = PlottableUtil.CategoryScale();
+        var yAxis = PlottableUtil.CategoryAxis(yScale, "left");
 
         var xAccessor = function(d) { return d.desc; }
         var yAccessor = function(d) { return 1; }
@@ -114,14 +128,13 @@ var PlottableUtil = {
         var colorScale = ["#FFFFFF", "#FF0000", "#FF00FF", "#FFFF00", "#F0FFF0", "#0FF0FF"];
         var colorAccessor = function(d) { return colorScale[d.id]; }
 
-        var plot = new PlottableUtil.RectPlot(dataset, xAccessor, yAccessor, colorAccessor, xScale, yScale);
-        plot.attr("stroke", "#fff")
-        plot.attr("stroke-width", 5);
-
-        var chart = new Plottable.Components.Table([
-                          [yAxis, plot],
-                          [null,  xAxis]
-                        ]);
+        var plot = new Plottable.Plots.Rectangle()
+          .addDataset(dataset)
+          .x(xAccessor, xScale)
+          .y(yAccessor, yScale)
+          .attr("fill", colorAccessor)
+          .attr("stroke", "#fff")
+          .attr("stroke-width", 5);
 
         var interaction = new Plottable.Interactions.Click();
         interaction.onClick(function(point) {
@@ -129,6 +142,11 @@ var PlottableUtil = {
           selection.attr("fill", "#F99D42");
         });
         interaction.attachTo(plot);
+
+        var chart = new Plottable.Components.Table([
+                          [yAxis, plot],
+                          [null,  xAxis]
+                        ]);
 
         return {chart: chart, dataset: dataset};
     }

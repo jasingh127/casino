@@ -30,8 +30,8 @@ var DbUtil = {
         for (var i=0; i < data["rows"].length; i++) {
           var row = data["rows"][i];
           var record = {
-            x:    new Date(row["year"], row["month"], row["day"], row["hour"], row["mins"]),
-            x1:   row["day_chunk"],
+            x:    new Date(row["year"], row["month"], row["day"], row["start_hour"], row["start_mins"]),
+            x2:   new Date(row["year"], row["month"], row["day"], row["end_hour"], row["end_mins"]),
             y:    row["table_desc"],
             val:  row["game_id"]
           }
