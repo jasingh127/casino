@@ -195,20 +195,19 @@ exports.refreshDb = function(req, res){
  Some utility functions + Global variables
  ************************************************************************/
 exports.N_DAY_CHUNKS = 48; // half hour chunks
+exports.MINS_PER_DAY_CHUNK = 60*24/exports.N_DAY_CHUNKS;
 
 exports.day_chunk_to_hour_min = function(chunk) {
   var start_hour = Math.floor(chunk*24/exports.N_DAY_CHUNKS);
   var end_hour = Math.floor((chunk+1)*24/exports.N_DAY_CHUNKS);
-  var mins_per_chunk = 60*24/exports.N_DAY_CHUNKS;
-  var start_mins = chunk*mins_per_chunk - start_hour*60;
-  var end_mins = (chunk+1)*mins_per_chunk - end_hour*60;
+  var start_mins = chunk*exports.MINS_PER_DAY_CHUNK - start_hour*60;
+  var end_mins = (chunk+1)*exports.MINS_PER_DAY_CHUNK - end_hour*60; // TODO: Check day wrap-around
   return {start_hour: start_hour, start_mins: start_mins, end_hour: end_hour, end_mins: end_mins};
 }
 
 exports.hour_min_to_day_chunk = function(hour, mins) {
   var tot_mins = 60*hour + mins;
-  var mins_per_chunk = 60*24/exports.N_DAY_CHUNKS;
-  return Math.floor(tot_mins/mins_per_chunk);
+  return Math.floor(tot_mins/exports.MINS_PER_DAY_CHUNK);
 }
 
 exports.random_int = function getRandomInt(min, max) {
