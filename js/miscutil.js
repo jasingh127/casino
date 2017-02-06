@@ -6,13 +6,15 @@
   
   db_server_address: "http://10.0.0.97:3000",
 
-  // Note Const/function below is duplicated on server as well
-  N_DAY_CHUNKS: 48, // half hour chunks
-
-  day_chunk_to_hour_min: function(chunk) {
-    var hour = Math.floor(chunk*24/MiscUtil.N_DAY_CHUNKS);
-    var mins_per_chunk = 60*24/MiscUtil.N_DAY_CHUNKS;
-    var mins = chunk*mins_per_chunk - hour*60;
-    return {hour: hour, mins: mins};
+  min_max_array: function(data) {
+    x_start = [];
+    x_end = [];
+    for (var i=0; i < data.length; i++) {
+      x_start.push(data[i].x);
+      x_end.push(data[i].x2);
+    }
+    x_min = _.min(x_start);
+    x_max = _.max(x_end);
+    return {x_min: x_min, x_max: x_max};
   }
 }

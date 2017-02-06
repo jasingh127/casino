@@ -52,16 +52,11 @@ var PlottableUtil = {
     OccupancyChart: function (shared_data) {
         // xScale
         var xScale = new Plottable.Scales.Time();
-        x_start = [];
-        x_end = [];
         var data = shared_data.occupancy_raw_data;
-        for (var i=0; i < data.length; i++) {
-            x_start.push(data[i].x);
-            x_end.push(data[i].x2);
-        }
-        x_min = _.min(x_start);
-        x_max = _.max(x_end);
-        xScale.domain([x_min, x_max]);
+        if (data.length > 0) {
+          var x_min_max = MiscUtil.min_max_array(data);
+          xScale.domain([x_min_max.x_min, x_min_max.x_max]);
+        };
 
         // xAxis
         var xAxis = new Plottable.Axes.Time(xScale, "bottom")
@@ -161,16 +156,11 @@ var PlottableUtil = {
         shared_data.occupancy_chart_dataset.data(shared_data.occupancy_raw_data);
 
         var xScale = shared_data.occupancy_chart_xScale;
-        x_start = [];
-        x_end = [];
         var data = shared_data.occupancy_raw_data;
-        for (var i=0; i < data.length; i++) {
-            x_start.push(data[i].x);
-            x_end.push(data[i].x2);
-        }
-        x_min = _.min(x_start);
-        x_max = _.max(x_end);
-        xScale.domain([x_min, x_max]);
+        if (data.length > 0) {
+          var x_min_max = MiscUtil.min_max_array(data);
+          xScale.domain([x_min_max.x_min, x_min_max.x_max]);
+        };
     },
 
     GameChart: function (shared_data) {
