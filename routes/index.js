@@ -18,7 +18,7 @@ exports.timetable = function(req, res){
  ************************************************************************/
 
 exports.insertOccupancy = function(req, res){
-  // console.log(req.body)
+  console.log(req.body)
   var RADIX = 10;
   var table_id = parseInt(req.body.table_id, RADIX);
   var game_id = parseInt(req.body.game_id, RADIX);
@@ -158,8 +158,9 @@ exports.refreshDb = function(req, res){
     // Insert dummy occupancy data for each day in the duration below
     // ================================================================================
 
-    var start_date = new Date(2017, 0, 20);  
+    var start_date = new Date(2017, 0, 1);  
     var now = new Date();
+    var now_day_chunk = exports.hour_min_to_day_chunk(now.getHours(), now.getMinutes());
     var game_id = 0;
     var PERSISTENCE_PROB = 0.7;
     var EMPTY_PROB = 0.4;
@@ -167,6 +168,8 @@ exports.refreshDb = function(req, res){
     for (var d = start_date; d <= now; d.setDate(d.getDate() + 1)) {
       for (var table_id = 1; table_id <= N_TABLES; table_id++)
         for (var day_chunk = 0; day_chunk < exports.N_DAY_CHUNKS; day_chunk++) {
+          if ((d.toDateString() === now.toDateString()) && (day_chunk > now_day_chunk)) 
+            break;
           if (Math.random() < PERSISTENCE_PROB)
             game_id = game_id; // do nothing
           else
@@ -180,6 +183,7 @@ exports.refreshDb = function(req, res){
           var day = d.getDate();
           var dow = d.getDay();
           var stmt = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)");
+          console.log("Inserting: " + [table_id, game_id, year, month, day, day_chunk, dow])
           stmt.run(table_id, game_id, year, month, day, day_chunk, dow);
           itrs++;
         }
@@ -194,19 +198,19 @@ exports.refreshDb = function(req, res){
 /************************************************************************
  Some utility functions + Global variables
  ************************************************************************/
-exports.N_DAY_CHUNKS = 48; // half hour chunks
-exports.MINS_PER_DAY_CHUNK = 60*24/exports.N_DAY_CHUNKS;
+exports.N_DAY_CHUNKS = 2 * 24; // half hour chunks
+exports.MINS_PER_DAY_CHUNK = 60 * 24/exports.N_DAY_CHUNKS;
 
 exports.day_chunk_to_hour_min = function(chunk) {
-  var start_hour = Math.floor(chunk*24/exports.N_DAY_CHUNKS);
-  var end_hour = Math.floor((chunk+1)*24/exports.N_DAY_CHUNKS);
-  var start_mins = chunk*exports.MINS_PER_DAY_CHUNK - start_hour*60;
-  var end_mins = (chunk+1)*exports.MINS_PER_DAY_CHUNK - end_hour*60; // TODO: Check day wrap-around
+  var start_hour = Math.floor(chunk * 24/exports.N_DAY_CHUNKS);
+  var end_hour = Math.floor((chunk + 1) * 24/exports.N_DAY_CHUNKS);
+  var start_mins = chunk * exports.MINS_PER_DAY_CHUNK - start_hour * 60;
+  var end_mins = (chunk + 1) * exports.MINS_PER_DAY_CHUNK - end_hour * 60; // TODO: Check day wrap-around
   return {start_hour: start_hour, start_mins: start_mins, end_hour: end_hour, end_mins: end_mins};
 }
 
 exports.hour_min_to_day_chunk = function(hour, mins) {
-  var tot_mins = 60*hour + mins;
+  var tot_mins = 60 * hour + mins;
   return Math.floor(tot_mins/exports.MINS_PER_DAY_CHUNK);
 }
 

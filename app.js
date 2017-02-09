@@ -38,47 +38,56 @@ app.post('/insertGames', routes.insertOccupancy);
 
 // Periodic function to update the database based on current status of tables
 var prev_time_slot = new Date();
-var extra_minutes = prev_time_slot.getMinutes() % routes.MINS_PER_DAY_CHUNK;
-prev_time_slot = new Date(prev_time_slot.getTime() - extra_minutes*60000) // Round to starting of this day chunk
+var MILLISEC_PER_MIN = 60000;
+
+var coeff = 1000 * 60 * routes.MINS_PER_DAY_CHUNK;
+var prev_time_slot = new Date(Math.floor(prev_time_slot.getTime()/coeff)*coeff); // Round to starting of this day chunk
+
+var update_occupancy = function(t1, t2) {
+  // For all tables, check the status/game from the previous day chunk and update the db
+  var year1 = t1.getFullYear();
+  var month1 = t1.getMonth();
+  var day1 = t1.getDate();
+  var day_chunk1 = routes.hour_min_to_day_chunk(t1.getHours(), t1.getMinutes());
+  var dow1 = t1.getDay();
+
+  var year2 = t2.getFullYear();
+  var month2 = t2.getMonth();
+  var day2 = t2.getDate();
+  var day_chunk2 = routes.hour_min_to_day_chunk(t2.getHours(), t2.getMinutes());
+  var dow2 = t2.getDay();
+
+  var filled_table_ids = [];
+  db.all("SELECT * FROM OCCUPANCY WHERE year = ? AND month = ? AND day = ? \
+    AND day_chunk = ? AND dow = ?", year2, month2, day2, day_chunk2, dow2,
+    function (err, rows) {
+      for (var i = 0; i < rows.length; i++)
+        filled_table_ids.push(rows[i]["table_id"]);
+    });
+
+  db.all("SELECT * FROM OCCUPANCY WHERE year = ? AND month = ? AND day = ? \
+    AND day_chunk = ? AND dow = ?", year1, month1, day1, day_chunk1, dow1,
+    function (err, rows) {
+      for (var i = 0; i < rows.length; i++) {
+        // update the db with new entry
+        var table_id = rows[i]["table_id"];
+        if (filled_table_ids.indexOf(table_id) < 0) {
+          var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)");
+          query.run(table_id, rows[i]["game_id"], year2, month2, day2, day_chunk2, dow2);   
+        }
+      }
+    });
+}
+
 setInterval(function () {
 	var now = new Date();
-	if ((now - prev_time_slot)/60/1000 > routes.MINS_PER_DAY_CHUNK) {
-	  // Get a list of tables
-      var table_ids = [];
-      db.all("SELECT * FROM TABLES", 
-        function (err, rows) {
-        for (var i=0; i < rows.length; i++)
-      	  table_ids.push(rows[i]["table_id"]);
-        }
-      );
-      // For all tables, check the status/game from the previous day chunk and update the db
-      var year1 = prev_time_slot.getFullYear();
-      var month1 = prev_time_slot.getMonth();
-      var day1 = prev_time_slot.getDate();
-      var day_chunk1 = routes.hour_min_to_day_chunk(prev_time_slot.getHours(), prev_time_slot.getMinutes());
-      var dow1 = prev_time_slot.getDay();
+	if ((now - prev_time_slot)/MILLISEC_PER_MIN > routes.MINS_PER_DAY_CHUNK) {
+    update_occupancy(prev_time_slot, now);
 
-      var year2 = now.getFullYear();
-      var month2 = now.getMonth();
-      var day2 = now.getDate();
-      var day_chunk2 = routes.hour_min_to_day_chunk(now.getHours(), now.getMinutes());
-      var dow2 = now.getDay();
-      for (var i = 0; i < table_ids.length; i++) {
-      	db.all("SELECT * FROM OCCUPANCY WHERE table_id = ? AND year = ? AND month = ? \
-          AND day = ? AND day_chunk = ? AND dow = ?", table_ids[i], year1, month1, day1, day_chunk1, dow1,
-          function (err, rows) {
-          	var game_id = 0; // TODO: Implicit empty table = 0, make it explicit
-          	if (rows.length == 1) // TODO: length can't be > 1, add assertion during testing
-          		game_id = rows[0]["game_id"];
-          	// update the db with new entry
-          	var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)");
-            query.run(table_ids[i], game_id, year2, month2, day2, day_chunk2, dow2);
-          });
-	  }
 	  // move prev_time_slot forward by one day chunk
-	  prev_time_slot = new Date(prev_time_slot.getTime() + routes.MINS_PER_DAY_CHUNK*60000);
-	}
-}, 60000);
+	  prev_time_slot = new Date(prev_time_slot.getTime() + routes.MINS_PER_DAY_CHUNK*MILLISEC_PER_MIN);
+  }
+}, 1 * MILLISEC_PER_MIN);
 
 app.listen(app.get('port'), function(){
   console.log("Casino app listening on port " + app.get('port'));
