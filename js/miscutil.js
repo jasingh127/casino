@@ -6,7 +6,7 @@
   
   db_server_address: "http://10.0.0.97:3000",
 
-  min_max_array: function(data) {
+  array_bounds: function(data) {
     x_start = [];
     x_end = [];
     for (var i=0; i < data.length; i++) {
@@ -15,6 +15,6 @@
     }
     x_min = _.min(x_start);
     x_max = _.max(x_end);
-    return {x_min: x_min, x_max: x_max};
+    return {min: x_min, max: x_max};
   }
 }

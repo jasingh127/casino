@@ -54,8 +54,8 @@ var PlottableUtil = {
         var xScale = new Plottable.Scales.Time();
         var data = shared_data.occupancy_raw_data;
         if (data.length > 0) {
-          var x_min_max = MiscUtil.min_max_array(data);
-          xScale.domain([x_min_max.x_min, x_min_max.x_max]);
+          var x_bounds = MiscUtil.array_bounds(data);
+          xScale.domain([x_bounds.min, x_bounds.max]);
         };
 
         // xAxis
@@ -68,11 +68,15 @@ var PlottableUtil = {
         var yScale = PlottableUtil.CategoryScale();
         var yAxis = PlottableUtil.CategoryAxis(yScale, "left");
 
-        var colorScale = shared_data.game_colorScale;
+        var colorScale = shared_data.game_color_scale;
         var xAccessor = function(d) { return d.x; }
         var x2Accessor = function(d) { return d.x2; }
         var yAccessor = function(d) { return d.y; }
-        var colorAccessor = function(d) { return colorScale[d.val]; }
+        var colorAccessor = function(d) { 
+          if (_.isUndefined(colorScale[d.val])) 
+            return shared_data.color_undefined;
+          return colorScale[d.val]; 
+        }
 
         var dataset = new Plottable.Dataset(data);
 
@@ -82,7 +86,9 @@ var PlottableUtil = {
           .x(xAccessor, xScale)
           .x2(x2Accessor, xScale)
           .y(yAccessor, yScale)
-          .attr("fill", colorAccessor);
+          .attr("fill", colorAccessor)
+          .attr("stroke", "black")
+          .attr("stroke-width", 0.5);
 
         // Guideline to show current time
         var now_date_time = new Date();
@@ -142,8 +148,8 @@ var PlottableUtil = {
                         ]);
 
         // pan/zoom
-        var panZoom = new Plottable.Interactions.PanZoom(xScale, null);
-        panZoom.attachTo(plots);
+        // var panZoom = new Plottable.Interactions.PanZoom(xScale, null);
+        // panZoom.attachTo(plots);
 
         // Update shared_data
         shared_data.occupancy_chart = chart;
@@ -158,9 +164,10 @@ var PlottableUtil = {
         var xScale = shared_data.occupancy_chart_xScale;
         var data = shared_data.occupancy_raw_data;
         if (data.length > 0) {
-          var x_min_max = MiscUtil.min_max_array(data);
-          xScale.domain([x_min_max.x_min, x_min_max.x_max]);
+          var x_bounds = MiscUtil.array_bounds(data);
+          xScale.domain([x_bounds.min, x_bounds.max]);
         };
+        $(window).scrollLeft(timetable_data.prev_scroll_val);
     },
 
     GameChart: function (shared_data) {
@@ -176,7 +183,7 @@ var PlottableUtil = {
         var data = shared_data.game_raw_data;
         var dataset = new Plottable.Dataset(data);
 
-        var colorScale = shared_data.game_colorScale;
+        var colorScale = shared_data.game_color_scale;
         var colorAccessor = function(d) { return colorScale[d.id]; }
 
         var plot = new Plottable.Plots.Rectangle()

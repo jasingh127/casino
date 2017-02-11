@@ -58,18 +58,58 @@ exports.fetchOccupancy = function(req, res){
   var year = Number(req.body.year)
   var month = Number(req.body.month)
   var day = Number(req.body.day)
-  db.all("SELECT * FROM OCCUPANCY INNER JOIN TABLES ON OCCUPANCY.table_id = TABLES.table_id \
-    WHERE year = ? AND month = ? AND day = ?", year, month, day, 
-    function (err, rows) {
-      // add hour, mins field as well for convenience
-      for (var i = 0; i < rows.length; i++) {
-        var hour_mins = exports.day_chunk_to_hour_min(rows[i]["day_chunk"]);
-        rows[i]["start_hour"] = hour_mins.start_hour;
-        rows[i]["start_mins"] = hour_mins.start_mins;
-        rows[i]["end_hour"] = hour_mins.end_hour;
-        rows[i]["end_mins"] = hour_mins.end_mins;
+
+  // call back function used below
+  var fetch_available_occupancy = function(year, month, day, table_daychunk_index) {
+    db.all("SELECT * FROM OCCUPANCY INNER JOIN TABLES ON OCCUPANCY.table_id = TABLES.table_id \
+      WHERE year = ? AND month = ? AND day = ?", year, month, day, 
+      function (err, rows) {
+        // add hour, mins field as well for convenience
+        for (var i = 0; i < rows.length; i++) {
+          var table_id = rows[i]["table_id"];
+          var day_chunk = rows[i]["day_chunk"];
+          var key = table_id + ":" + day_chunk;
+          table_daychunk_index[key]["game_id"] = rows[i]["game_id"];
+        }
+        var all_rows = [];
+        for (var key in table_daychunk_index) {
+          if (table_daychunk_index.hasOwnProperty(key))
+            all_rows.push(table_daychunk_index[key]);
+        }
+        res.json({"rows": all_rows});
       }
-      res.json({"rows": rows});
+    );
+  }
+
+  // First create "blank" entries for ALL tables/day_chunks for this day,
+  // then populate with available occupancy data.
+  // We need ths because future data for this day is not available but we still 
+  // want to show some editable entries for day chunks after current time. 
+  db.all("SELECT * FROM TABLES", 
+    function (err, rows) {
+      var table_daychunk_index = {};
+      for (var i = 0; i < rows.length; i++)
+        for (var j = 0; j < exports.N_DAY_CHUNKS; j++) {
+          var record = {};
+          record["table_id"] = rows[i]["table_id"];
+          record["game_id"] = exports.BLANK_GAME_ID;  // BLANK ENTRY
+          record["year"] = year;
+          record["month"] = month;
+          record["day"] = day;
+          record["day_chunk"] = j;
+          record["dow"] = new Date(year, month, day).getDay();
+          record["table_desc"] = rows[i]["table_desc"];
+          var hour_mins = exports.day_chunk_to_hour_min(record["day_chunk"]);
+          record["start_hour"] = hour_mins.start_hour;
+          record["start_mins"] = hour_mins.start_mins;
+          record["end_hour"] = hour_mins.end_hour;
+          record["end_mins"] = hour_mins.end_mins;
+          var key = record["table_id"] + ":" + record["day_chunk"];
+          table_daychunk_index[key] = record;
+        }
+
+      // Overwrite with available occupancy data and return
+      fetch_available_occupancy(year, month, day, table_daychunk_index);
     }
   );
 };
@@ -200,6 +240,7 @@ exports.refreshDb = function(req, res){
  ************************************************************************/
 exports.N_DAY_CHUNKS = 2 * 24; // half hour chunks
 exports.MINS_PER_DAY_CHUNK = 60 * 24/exports.N_DAY_CHUNKS;
+exports.BLANK_GAME_ID = -1; // Different from empty table, blank means missing/no information
 
 exports.day_chunk_to_hour_min = function(chunk) {
   var start_hour = Math.floor(chunk * 24/exports.N_DAY_CHUNKS);

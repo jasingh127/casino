@@ -35,7 +35,9 @@
       game_chart: null,
       game_raw_data: null,
       picked_game: -1,
-      game_colorScale: ["gray", "aqua", "lime", "maroon", "purple", "red", "blue", "green", "yellow", "olive"]
+      game_color_scale: ["gray", "aqua", "lime", "maroon", "purple", "red", "blue", "green", "yellow", "olive"],
+      color_undefined: "white",
+      prev_scroll_val: 0
     };
     </script>
     
@@ -81,10 +83,10 @@
   <br>
   <br>
   <br>
-  <svg id="occupancy" width=150% height="600"></svg>
+  <svg id="occupancy" width=200% height="600"></svg>
   <br>
   <br>
-  <svg id="game_list" width=50% height="60"></svg>
+  <svg id="game_list" width=80% height="100"></svg>
   <br>
   <br>
   <p> Date: <input type="text" id="datepicker"></p>
@@ -94,10 +96,12 @@
     var month = today.getMonth();
     var day = today.getDate();
     
+    //===============================================
     // Document ready function below
+    //===============================================
     $(function() {
 
-      // Automatically refresh the page if no user activity happens for N_REFRESH_SECS seconds
+      // Automatically refresh the page if no user activity happens for some time
       var N_REFRESH_SECS = 120;
       var last_refresh_time = new Date().getTime();
       $(document.body).bind("mousemove keypress", function(e) {
@@ -132,5 +136,13 @@
       DbUtil.fetchGames(game_callback);
 
     });
+    //===============================================
+    // Catching window scroll position
+    //===============================================
+    $(window).scroll(function (event) {
+      timetable_data.prev_scroll_val = $(window).scrollLeft();
+    });
+
+
   </script>
 </body>
