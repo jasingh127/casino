@@ -19,7 +19,7 @@ app.use(cors());
 function createDatabase() {
   console.log("Initializing DB connection...")
   // Create db tables
-  db = new sqlite.Database(path.join(__dirname, 'data/sample.db'));
+  db = new sqlite.Database(path.join(__dirname, 'data/casino_tables.db'));
 }
 
 // Initialize connection to database
@@ -33,6 +33,7 @@ app.get('/refreshDb', routes.refreshDb);
 app.get('/fetchGames', routes.fetchGames)
 app.get('/fetchTables', routes.fetchTables)
 app.post('/fetchOccupancy', routes.fetchOccupancy);
+app.post('/fetchWeeklyTableHours', routes.fetchWeeklyTableHours);
 app.post('/insertOccupancy', routes.insertOccupancy);
 app.post('/insertTables', routes.insertOccupancy);
 app.post('/insertGames', routes.insertOccupancy);

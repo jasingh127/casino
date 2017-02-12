@@ -33,19 +33,49 @@
       ****************************************************************************/
       var report_data = { 
         start_date: null,
-        end_date: null
+        end_date: null,
+        tbl_shift_report_chart: null,
+        tbl_shift_report_dataset: null,
+        tbl_shift_raw_data: null,
+        dow_color_scale: ["lime", "maroon", "purple", "red", "blue", "green", "yellow"]
       };
+
+      // Helper function
+      var ymd_from_report_data = function() {
+        var year1 = report_data.start_date.getFullYear();
+        var month1 = report_data.start_date.getMonth();
+        var day1 = report_data.start_date.getDate();
+
+        var year2 = report_data.end_date.getFullYear();
+        var month2 = report_data.end_date.getMonth();
+        var day2 = report_data.end_date.getDate();
+        return {year1:year1, month1:month1, day1:day1, year2:year2, month2:month2, day2:day2}
+      }
     </script>
 
     <script>
+      var common_tbl_refresh_helper = function() {
+        var tbl_shift_refresh_callback = function(data) {
+          report_data.tbl_shift_raw_data = data;
+          // console.log(data)
+          PlottableUtil.refreshTableShiftReportChart(report_data);
+          report_data.tbl_shift_report_chart.renderTo("#weekly_bar_chart");
+        }
+      
+        var ymd = ymd_from_report_data();
+        DbUtil.fetchWeeklyTableHours({"year1":ymd.year1, "month1": ymd.month1, "day1":ymd.day1, 
+          "year2":ymd.year2, "month2": ymd.month2, "day2":ymd.day2}, tbl_shift_refresh_callback);        
+      };
+
       $( function() { 
         start_date_callback = function(date) {
           report_data.start_date = new Date(date.getTime());
           report_data.end_date = new Date(date.getTime() + 60 * 60 * 24 * 6 * 1000);
           $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
-          $("#end_date").val(MiscUtil.date_to_str(report_data.end_date)); 
-
+          $("#end_date").val(MiscUtil.date_to_str(report_data.end_date));
+          common_tbl_refresh_helper();
         };
+
         MiscUtil.date_picker_helper("#start_date", start_date_callback); 
       });
 
@@ -55,7 +85,9 @@
           report_data.end_date = new Date(date.getTime());
           $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
           $("#end_date").val(MiscUtil.date_to_str(report_data.end_date)); 
+          common_tbl_refresh_helper();
         };
+
         MiscUtil.date_picker_helper("#end_date", end_date_callback); 
       });
     </script>
@@ -70,15 +102,19 @@
   <center> <p> End Date: <input type="text" id="end_date"></p> </center>
   <br>
   <center> <h3> Weekly Average Report - One Week - Bar Chart </h3> </center>
+  <br>
   <center> <svg id="weekly_bar_chart" width=80% height="1200"></svg> </center>
   <br>
   <center> <h3> Weekly Numbers Only For One Week </h3> </center>
+  <br>
   <center> <svg id="weekly_numbers" width=80% height="600"></svg> </center>  <br>
   <br>
   <center> <h3> One Week Spreadsheet Report </h3> </center>
+  <br>
   <center> <svg id="one_week_spreadsheet" width=80% height="600"></svg> </center>  <br>
   <br>
   <center> <h3> Day of the Week Game Bar Chart Comparison </h3> </center>
+  <br>
   <center> <svg id="dow_bar_chart" width=80% height="600"></svg> </center>
   <br>
 
@@ -96,6 +132,19 @@
 
       $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
       $("#end_date").val(MiscUtil.date_to_str(report_data.end_date)); 
+
+      /***************************************************************************
+      // Fetch weekly table hours per shift report and show
+      ****************************************************************************/
+      var tbl_shift_callback = function(data) {
+        report_data.tbl_shift_raw_data = data;
+        // console.log(data)
+        PlottableUtil.TableShiftReportChart(report_data);
+        report_data.tbl_shift_report_chart.renderTo("#weekly_bar_chart");
+      }
+      var ymd = ymd_from_report_data();
+      DbUtil.fetchWeeklyTableHours({"year1":ymd.year1, "month1": ymd.month1, "day1":ymd.day1, 
+        "year2":ymd.year2, "month2": ymd.month2, "day2":ymd.day2}, tbl_shift_callback);
 
       /***************************************************************************
       // Google cloud print functionality

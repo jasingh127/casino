@@ -220,5 +220,94 @@ var PlottableUtil = {
 
         // Update shared_data
         shared_data.game_chart = chart;
-    }
+    },
+
+    TableShiftReportChart: function (shared_data) {
+        var xScale = PlottableUtil.LinearScale();
+        var yScale1 = PlottableUtil.LinearScale();
+        var yScale2 = PlottableUtil.LinearScale();
+        var yScale3 = PlottableUtil.LinearScale();
+
+        var xAccessor = function(d) { return d.x; }
+        var yAccessor1 = function(d) { return d.y1; }
+        var yAccessor2 = function(d) { return d.y2; }
+        var yAccessor3 = function(d) { return d.y3; }
+        var xAxis = PlottableUtil.NumericAxis(xScale, "bottom");
+        var yAxis1 = PlottableUtil.NumericAxis(yScale1, "left");
+        var yAxis2 = PlottableUtil.NumericAxis(yScale2, "left");
+        var yAxis3 = PlottableUtil.NumericAxis(yScale3, "left");
+
+        var data = shared_data.tbl_shift_raw_data;
+        var dataset = new Plottable.Dataset(data);
+
+        var colorScale = shared_data.dow_color_scale;
+        var colorAccessor = function(d) { return colorScale[d.x]; }
+
+        var legendColorScale = new Plottable.Scales.Color()
+        .domain(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"])
+        .range(colorScale);
+
+        var legend1 = new Plottable.Components.Legend(legendColorScale);
+        var title1 = new Plottable.Components.TitleLabel("Graveyard Shift 2AM - 10AM", 0)
+        .yAlignment("top");
+
+        var plot1 = new Plottable.Plots.Bar()
+          .addDataset(dataset)
+          .x(xAccessor, xScale)
+          .y(yAccessor1, yScale1)
+          .attr("fill", colorAccessor)
+          .animated(true)
+          .labelsEnabled(true)
+
+        var group1 = new Plottable.Components.Group([plot1, legend1, title1]);
+
+        var legend2 = new Plottable.Components.Legend(legendColorScale);
+        var title2 = new Plottable.Components.TitleLabel("Day Shift 10AM - 6PM", 0)
+        .yAlignment("top");
+
+        var plot2 = new Plottable.Plots.Bar()
+          .addDataset(dataset)
+          .x(xAccessor, xScale)
+          .y(yAccessor2, yScale2)
+          .attr("fill", colorAccessor)
+          .animated(true)
+          .labelsEnabled(true)
+
+        var group2 = new Plottable.Components.Group([plot2, legend2, title2]);
+
+        var legend3 = new Plottable.Components.Legend(legendColorScale);
+        var title3 = new Plottable.Components.TitleLabel("Swing Shift 6PM - 2AM", 0)
+        .yAlignment("top");
+
+        var plot3 = new Plottable.Plots.Bar()
+          .addDataset(dataset)
+          .x(xAccessor, xScale)
+          .y(yAccessor3, yScale3)
+          .attr("fill", colorAccessor)
+          .animated(true)
+          .labelsEnabled(true)
+
+        var group3 = new Plottable.Components.Group([plot3, legend3, title3]);
+
+        var yLabel1 = new Plottable.Components.AxisLabel("Avg # Tables", "270");
+        var yLabel2 = new Plottable.Components.AxisLabel("Avg # Tables", "270");
+        var yLabel3 = new Plottable.Components.AxisLabel("Avg # Tables", "270");
+
+        var chart = new Plottable.Components.Table([
+                          [yLabel1, yAxis1, group1],
+                          [yLabel2, yAxis2, group2],
+                          [yLabel3, yAxis3, group3],
+                          [null, null, xAxis]
+                        ]);
+
+        // Update shared_data
+        shared_data.tbl_shift_report_chart = chart;
+        shared_data.tbl_shift_report_dataset = dataset;
+    },
+
+    refreshTableShiftReportChart: function (shared_data) {
+        // raw data changed, so refresh dataset
+        shared_data.tbl_shift_report_dataset.data(shared_data.tbl_shift_raw_data);
+    },
+
 };

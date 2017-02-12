@@ -56,6 +56,7 @@ exports.insertGames = function(req, res){
   res.json({status: "pass"}) // TODO: Modify this to indicate status of query
 };
 
+// Fetch occupancy table data for a single day
 exports.fetchOccupancy = function(req, res){
   // console.log(req.body)
   var year = Number(req.body.year)
@@ -131,6 +132,53 @@ exports.fetchGames = function(req, res){
   db.all("SELECT * FROM GAMES ORDER BY game_id", 
     function (err, rows) {
       res.json({"rows": rows});
+    }
+  );
+};
+
+exports.fetchWeeklyTableHours = function(req, res){
+  // console.log(req.body)
+  var year1 = Number(req.body.year1)
+  var month1 = Number(req.body.month1)
+  var day1 = Number(req.body.day1)
+
+  var year2 = Number(req.body.year2)
+  var month2 = Number(req.body.month2)
+  var day2 = Number(req.body.day2)
+
+  db.all("SELECT * FROM OCCUPANCY \
+    WHERE year BETWEEN ? AND ? \
+    AND month BETWEEN ? AND ? \
+    AND day BETWEEN ? and ? \
+    AND game_id > 0 ", year1, year2, month1, month2, day1, day2, 
+    function (err, rows) {
+      var graveyard_tot_hours = [0, 0, 0, 0, 0, 0, 0]; // 7 days of week (dow)
+      var day_tot_hours       = [0, 0, 0, 0, 0, 0, 0]; // 7 days of week (dow)
+      var swing_tot_hours     = [0, 0, 0, 0, 0, 0, 0]; // 7 days of week (dow)
+      var graveyard_avg_hours = [0, 0, 0, 0, 0, 0, 0]; // 7 days of week (dow)
+      var day_avg_hours       = [0, 0, 0, 0, 0, 0, 0]; // 7 days of week (dow)
+      var swing_avg_hours     = [0, 0, 0, 0, 0, 0, 0]; // 7 days of week (dow)
+      // Count number of hours of table play based on chunks accumulated
+      for (var i = 0; i < rows.length; i++) {
+        var chunk = rows[i]["day_chunk"];
+        var dow = rows[i]["dow"];
+        if (chunk >= exports.GRAVEYARD_SHIFT_START && chunk < exports.GRAVEYARD_SHIFT_END) {
+          graveyard_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
+          graveyard_avg_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR/exports.GRAVEYARD_SHIFT_TOT_HOURS;
+        }
+        else if (chunk >= exports.DAY_SHIFT_START && chunk < exports.DAY_SHIFT_END) {
+          day_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
+          day_avg_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR/exports.DAY_SHIFT_TOT_HOURS;
+        }
+        else if (chunk >= exports.SWING_SHIFT_START || chunk < exports.SWING_SHIFT_END) {   // || because (18, 2)
+          swing_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
+          swing_avg_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR/exports.SWING_SHIFT_TOT_HOURS;
+        }
+      }
+      var result = {graveyard_tot_hours: graveyard_tot_hours, graveyard_avg_hours: graveyard_avg_hours,
+                    day_tot_hours: day_tot_hours, day_avg_hours: day_avg_hours, 
+                    swing_tot_hours: swing_tot_hours, swing_avg_hours: swing_avg_hours};
+      res.json({"result":result});
     }
   );
 };
@@ -241,9 +289,22 @@ exports.refreshDb = function(req, res){
 /************************************************************************
  Some utility functions + Global variables
  ************************************************************************/
-exports.N_DAY_CHUNKS = 2 * 24; // half hour chunks
-exports.MINS_PER_DAY_CHUNK = 60 * 24/exports.N_DAY_CHUNKS;
+exports.CHUNKS_PER_HOUR = 2;
+exports.N_DAY_CHUNKS = exports.CHUNKS_PER_HOUR * 24; // half hour chunks
+exports.MINS_PER_DAY_CHUNK = 60 / exports.CHUNKS_PER_HOUR;
 exports.BLANK_GAME_ID = -1; // Different from empty table, blank means missing/no information
+
+exports.GRAVEYARD_SHIFT_START = 2 * exports.CHUNKS_PER_HOUR; // 2 AM
+exports.GRAVEYARD_SHIFT_END = 10 * exports.CHUNKS_PER_HOUR; // 10 AM
+exports.GRAVEYARD_SHIFT_TOT_HOURS = 8.0; // 2 AM - 10 AM
+
+exports.DAY_SHIFT_START = 10 * exports.CHUNKS_PER_HOUR; // 10 AM
+exports.DAY_SHIFT_END = 18 * exports.CHUNKS_PER_HOUR; // 6 PM
+exports.DAY_SHIFT_TOT_HOURS = 8.0; // 10 AM - 6 PM
+
+exports.SWING_SHIFT_START = 18 * exports.CHUNKS_PER_HOUR; // 6 PM
+exports.SWING_SHIFT_END = 2 * exports.CHUNKS_PER_HOUR; // 2 AM
+exports.SWING_SHIFT_TOT_HOURS = 8.0; // 6 PM - 2 AM
 
 exports.day_chunk_to_hour_min = function(chunk) {
   var start_hour = Math.floor(chunk * 24/exports.N_DAY_CHUNKS);
