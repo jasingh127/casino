@@ -12,6 +12,9 @@ exports.timetable = function(req, res){
   res.sendFile('timetable.html', {root: __dirname + '/../html'});
 };
 
+exports.reports = function(req, res){
+  res.sendFile('reports.html', {root: __dirname + '/../html'});
+};
 
 /************************************************************************
  Rest API for Database operations.

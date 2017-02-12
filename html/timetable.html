@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <head>
+    <title> Current Poker Games </title>
 
     <link rel="stylesheet" href="../css/third_party/plottable.css">
     <link rel="stylesheet" href="../css/third_party/bootstrap.min.css">
@@ -43,62 +44,41 @@
     
     <script>
       $( function() { 
-        $("#datepicker").datepicker({
-            dateFormat: "DD, d MM, yy",
-            showOtherMonths: true,
-            selectOtherMonths: true,
-            autoclose: true,
-            changeMonth: true,
-            changeYear: true,
-            beforeShow: function (input, inst) {
-              setTimeout(function () {
-                var offsets = $("#datepicker").offset();
-                var h = $("#datepicker").outerHeight();
-                inst.dpDiv.css({
-                  top: offsets.top + h,
-                  left: offsets.left
-                });
-              },0);
-            },
-            onSelect: function(dateText) {
-              var date = $(this).datepicker('getDate');
-              var year = date.getFullYear();
-              var month = date.getMonth();
-              var day = date.getDate();
-              var occupancy_refresh_callback = function (data) {
-                timetable_data.occupancy_raw_data = data;
-                PlottableUtil.refreshOccupancyChart(timetable_data);
-                timetable_data.occupancy_chart.renderTo("#occupancy");
-              };
-              DbUtil.fetchOccupancy({"year":year, "month": month, "day":day}, occupancy_refresh_callback);
-            }      
-        });      
+        date_picker_callback = function(date) {
+          var year = date.getFullYear();
+          var month = date.getMonth();
+          var day = date.getDate();
+          var occupancy_refresh_callback = function (data) {
+            timetable_data.occupancy_raw_data = data;
+            PlottableUtil.refreshOccupancyChart(timetable_data);
+            timetable_data.occupancy_chart.renderTo("#occupancy");
+          };
+          DbUtil.fetchOccupancy({"year":year, "month": month, "day":day}, occupancy_refresh_callback);
+        };
+
+        MiscUtil.date_picker_helper("#datepicker", date_picker_callback); 
       });
     </script>
 
 </head>
 
 <body>
-  <center> <h1> SAN PABLO LYTTON CASINO </h1> </center>
+  <br>
+  <center> <h1> CURRENT GAMES </h1> </center>
+  <br>
   <center> <p> <input type="text" id="datepicker"></p> </center>
   <br>
   <svg id="occupancy" width=200% height="600"></svg>
-  <br>
-  <br>
+  <center> <h3> Pick the game you want to start, pick empty to stop a game. </h3> </center>
   <center> <svg id="game_list" width=80% height="100"></svg> </center>
+  <br>
+  <br>
 
   <script>
-    var today = new Date();
-    var year = today.getFullYear();
-    var month = today.getMonth();
-    var day = today.getDate();
-    
-    //===============================================
-    // Document ready function below
-    //===============================================
     $(function() {
-
+      /***************************************************************************
       // Automatically refresh the page if no user activity happens for some time
+      ****************************************************************************/
       var N_REFRESH_SECS = 120;
       var last_refresh_time = new Date().getTime();
       $(document.body).bind("mousemove keypress", function(e) {
@@ -113,15 +93,18 @@
       }
       setTimeout(refresh, 20000);
 
-      // Change the calender input-box to today's date
-      var day_names = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-      var month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", 
-        "November", "December"];
-      var date_str = day_names[today.getDay()] + ", " + today.getDate() + " " + month_names[today.getMonth()] 
-        + ", " + today.getFullYear()
-      $("#datepicker").val(date_str); 
+      /***************************************************************************
+      // Show today's date in the input box
+      ****************************************************************************/
+      var today = new Date();
+      var year = today.getFullYear();
+      var month = today.getMonth();
+      var day = today.getDate();
+      $("#datepicker").val(MiscUtil.date_to_str(today)); 
 
+      /***************************************************************************
       // Fetch occupancy data for today from the database and show
+      ****************************************************************************/
       var occupancy_callback = function (data) {
         timetable_data.occupancy_raw_data = data;
         PlottableUtil.OccupancyChart(timetable_data);
@@ -138,9 +121,10 @@
       DbUtil.fetchGames(game_callback);
 
     });
-    //===============================================
+    
+    /***************************************************************************
     // Catching window scroll position
-    //===============================================
+    ****************************************************************************/
     $(window).scroll(function (event) {
       timetable_data.prev_scroll_val = $(window).scrollLeft();
     });

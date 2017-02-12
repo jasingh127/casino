@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+    <title> Game Reports </title>
+    <link rel="stylesheet" href="../css/third_party/plottable.css">
+    <link rel="stylesheet" href="../css/third_party/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/third_party/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="../css/third_party/jquery.dataTables-1.10.0.css">
+    <link rel="stylesheet" href="../css/third_party/scroller.dataTables.min.css">
+    <link rel="stylesheet" href="../css/third_party/jquery-ui.css">
+
+    <script type="text/javascript" src="../js/third_party/jquery-2.2.0.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/d3.v3.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/d3.tip.v0.6.3.js"></script>
+    <script type="text/javascript" src="../js/third_party/jquery.dataTables-1.10.0.js"></script>
+    <script type="text/javascript" src="../js/third_party/dataTables.scroller.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/plottable.js"></script>
+    <script type="text/javascript" src="../js/third_party/d3-jetpack.js"></script>
+    <script type="text/javascript" src="../js/third_party/gunzip.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/underscore-min.js"></script>
+    <script type="text/javascript" src="../js/third_party/jquery-ui.js"></script>
+
+    <script type="text/javascript" src="../js/miscutil.js"></script>
+    <script type="text/javascript" src="../js/dbutil.js"></script>
+    <script type="text/javascript" src="../js/plottableutil.js"></script>
+
+    <script src="https://www.google.com/cloudprint/client/cpgadget.js"></script>
+</head>
+
+<body>
+  <br>
+  <center> <h1> Pick the week for which you want to see the reports. </h1> </center>
+  <br>
+  <center> <p> Start Date: <input type="text" id="start_date"></p> </center>
+  <center> <p> End Date: <input type="text" id="end_date"></p> </center>
+  <br>
+  <center> <h3> Weekly Average Report - One Week - Bar Chart </h3> </center>
+  <center> <svg id="weekly_bar_chart" width=80% height="1200"></svg> </center>
+  <br>
+  <center> <h3> Weekly Numbers Only For One Week </h3> </center>
+  <center> <svg id="weekly_numbers" width=80% height="600"></svg> </center>  <br>
+  <br>
+  <center> <h3> One Week Spreadsheet Report </h3> </center>
+  <center> <svg id="one_week_spreadsheet" width=80% height="600"></svg> </center>  <br>
+  <br>
+  <center> <h3> Day of the Week Game Bar Chart Comparison </h3> </center>
+  <center> <svg id="dow_bar_chart" width=80% height="600"></svg> </center>
+  <br>
+
+  <script>
+    $(function() {
+      /***************************************************************************
+      // Show today's date in the input box
+      ****************************************************************************/
+      var today = new Date();
+      var year = today.getFullYear();
+      var month = today.getMonth();
+      var day = today.getDate();
+      $("#datepicker").val(MiscUtil.date_to_str(today)); 
+
+      /***************************************************************************
+      // Google cloud print functionality
+      ****************************************************************************/
+      var gadget = new cloudprint.Gadget();
+      gadget.setPrintButton(
+        cloudprint.Gadget.createDefaultPrintButton("print_button_container")); // div id to contain the button
+      // gadget.setPrintDocument("[document mimetype]", "[document title]", "[document content]", "[encoding] (optional)");
+      gadget.setPrintDocument("url", "Test Page", "https://www.google.com/landing/cloudprint/testpage.pdf");
+
+    }); 
+
+  </script>
+</body>
