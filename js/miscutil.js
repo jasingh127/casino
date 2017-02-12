@@ -40,8 +40,8 @@
       changeYear: true,
       beforeShow: function (input, inst) {
         setTimeout(function () {
-          var offsets = $("#datepicker").offset();
-          var h = $("#datepicker").outerHeight();
+          var offsets = $(element_id).offset();
+          var h = $(element_id).outerHeight();
           inst.dpDiv.css({
             top: offsets.top + h,
             left: offsets.left

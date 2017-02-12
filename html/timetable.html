@@ -27,19 +27,21 @@
     <script type="text/javascript" src="../js/plottableutil.js"></script>
 
     <script>
-    // Shared persistent variables 
-    var timetable_data = { 
-      occupancy_chart: null,
-      occupancy_raw_data: null,
-      occupancy_chart_dataset: null,
-      occupancy_chart_xScale: null,
-      game_chart: null,
-      game_raw_data: null,
-      picked_game: -1,
-      game_color_scale: ["gray", "aqua", "lime", "maroon", "purple", "red", "blue", "green", "yellow", "olive"],
-      color_undefined: "white",
-      prev_scroll_val: 0
-    };
+      /***************************************************************************
+      // Global variables to store persistent state
+      ****************************************************************************/
+      var timetable_data = { 
+        occupancy_chart: null,
+        occupancy_raw_data: null,
+        occupancy_chart_dataset: null,
+        occupancy_chart_xScale: null,
+        game_chart: null,
+        game_raw_data: null,
+        picked_game: -1,
+        game_color_scale: ["gray", "aqua", "lime", "maroon", "purple", "red", "blue", "green", "yellow", "olive"],
+        color_undefined: "white",
+        prev_scroll_val: 0
+      };
     </script>
     
     <script>
@@ -69,7 +71,7 @@
   <center> <p> <input type="text" id="datepicker"></p> </center>
   <br>
   <svg id="occupancy" width=200% height="600"></svg>
-  <center> <h3> Pick the game you want to start, pick empty to stop a game. </h3> </center>
+  <center> <h3> Click and pick a game to start, pick empty to stop a game. </h3> </center>
   <center> <svg id="game_list" width=80% height="100"></svg> </center>
   <br>
   <br>

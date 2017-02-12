@@ -26,6 +26,40 @@
     <script type="text/javascript" src="../js/plottableutil.js"></script>
 
     <script src="https://www.google.com/cloudprint/client/cpgadget.js"></script>
+
+    <script>
+      /***************************************************************************
+      // Global variables to store persistent state
+      ****************************************************************************/
+      var report_data = { 
+        start_date: null,
+        end_date: null
+      };
+    </script>
+
+    <script>
+      $( function() { 
+        start_date_callback = function(date) {
+          report_data.start_date = new Date(date.getTime());
+          report_data.end_date = new Date(date.getTime() + 60 * 60 * 24 * 6 * 1000);
+          $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
+          $("#end_date").val(MiscUtil.date_to_str(report_data.end_date)); 
+
+        };
+        MiscUtil.date_picker_helper("#start_date", start_date_callback); 
+      });
+
+      $( function() { 
+        end_date_callback = function(date) {
+          report_data.start_date = new Date(date.getTime() - 60 * 60 * 24 * 6 * 1000);
+          report_data.end_date = new Date(date.getTime());
+          $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
+          $("#end_date").val(MiscUtil.date_to_str(report_data.end_date)); 
+        };
+        MiscUtil.date_picker_helper("#end_date", end_date_callback); 
+      });
+    </script>
+
 </head>
 
 <body>
@@ -54,10 +88,14 @@
       // Show today's date in the input box
       ****************************************************************************/
       var today = new Date();
-      var year = today.getFullYear();
-      var month = today.getMonth();
-      var day = today.getDate();
-      $("#datepicker").val(MiscUtil.date_to_str(today)); 
+      var week_ago = new Date();
+      week_ago.setDate(today.getDate() - 6);
+      
+      report_data.start_date = week_ago;
+      report_data.end_date = today;
+
+      $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
+      $("#end_date").val(MiscUtil.date_to_str(report_data.end_date)); 
 
       /***************************************************************************
       // Google cloud print functionality
