@@ -226,7 +226,8 @@ exports.refreshDb = function(req, res){
     // ================================================================================
 
     var N_TABLES = 10;
-    var GAME_DESCS = ["Empty", "21BJ", "DHP", "BAC", "POKER", "3CP", "PGT"]
+    // var GAME_DESCS = ["Empty", "21BJ", "DHP", "BAC", "POKER", "3CP", "PGT"]
+    var GAME_DESCS = ["EMPTY", "BLACKJACK", "DOUBLE HAND POKER", "BACCARAT", "POKER", "3 CARD POKER", "PAI GOW TILES"]
     var N_GAMES = GAME_DESCS.length - 1;
     
     // Delete existing data

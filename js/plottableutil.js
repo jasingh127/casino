@@ -248,7 +248,7 @@ var PlottableUtil = {
         .range(colorScale);
 
         var legend1 = new Plottable.Components.Legend(legendColorScale);
-        var title1 = new Plottable.Components.TitleLabel("Graveyard Shift 2AM - 10AM", 0)
+        var title1 = new Plottable.Components.TitleLabel("Graveyard Shift 2AM - 10AM", 0) //title times are hard-coded
         .yAlignment("top");
 
         var plot1 = new Plottable.Plots.Bar()
@@ -262,7 +262,7 @@ var PlottableUtil = {
         var group1 = new Plottable.Components.Group([plot1, legend1, title1]);
 
         var legend2 = new Plottable.Components.Legend(legendColorScale);
-        var title2 = new Plottable.Components.TitleLabel("Day Shift 10AM - 6PM", 0)
+        var title2 = new Plottable.Components.TitleLabel("Day Shift 10AM - 6PM", 0) //title times are hard-coded
         .yAlignment("top");
 
         var plot2 = new Plottable.Plots.Bar()
@@ -276,7 +276,7 @@ var PlottableUtil = {
         var group2 = new Plottable.Components.Group([plot2, legend2, title2]);
 
         var legend3 = new Plottable.Components.Legend(legendColorScale);
-        var title3 = new Plottable.Components.TitleLabel("Swing Shift 6PM - 2AM", 0)
+        var title3 = new Plottable.Components.TitleLabel("Swing Shift 6PM - 2AM", 0) //title times are hard-coded
         .yAlignment("top");
 
         var plot3 = new Plottable.Plots.Bar()
