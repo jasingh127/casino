@@ -38,14 +38,8 @@ app.post('/insertOccupancy', routes.insertOccupancy);
 app.post('/insertTables', routes.insertOccupancy);
 app.post('/insertGames', routes.insertOccupancy);
 
-// Periodic function to update the database based on current status of tables
-var prev_time_slot = new Date();
-var MILLISEC_PER_MIN = 60000;
-
-var coeff = 1000 * 60 * routes.MINS_PER_DAY_CHUNK;
-var prev_time_slot = new Date(Math.floor(prev_time_slot.getTime()/coeff)*coeff); // Round to starting of this day chunk
-
 /************************************************************************
+// Periodic function to update the database based on current status of tables
  t1 - prev day chunk
  t2 - current day chunk
  For each table, check if an entry for current day chunk exists in the DB,
@@ -88,14 +82,14 @@ var update_occupancy = function(t1, t2) {
     });
 }
 
+var MILLISEC_PER_MIN = 60000;
+
 setInterval(function () {
 	var now = new Date();
-	if ((now - prev_time_slot)/MILLISEC_PER_MIN > routes.MINS_PER_DAY_CHUNK) {
-    update_occupancy(prev_time_slot, now);
+  var prev = new Date(now.getTime() - routes.MINS_PER_DAY_CHUNK*MILLISEC_PER_MIN);
 
-	  // move prev_time_slot forward by one day chunk
-	  prev_time_slot = new Date(prev_time_slot.getTime() + routes.MINS_PER_DAY_CHUNK*MILLISEC_PER_MIN);
-  }
+  update_occupancy(prev, now);
+
 }, 1 * MILLISEC_PER_MIN);
 
 app.listen(app.get('port'), function(){
