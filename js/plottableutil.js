@@ -75,7 +75,13 @@ var PlottableUtil = {
         var colorAccessor = function(d) { 
           if (_.isUndefined(colorScale[d.val])) 
             return shared_data.color_undefined;
-          return colorScale[d.val]; 
+          return colorScale[d.val];
+        }
+
+        var labelAccessor = function(d) {
+          if (d.val > 0)
+            return shared_data.game_id_to_desc[d.val];
+          return "";
         }
 
         var dataset = new Plottable.Dataset(data);
@@ -88,7 +94,9 @@ var PlottableUtil = {
           .y(yAccessor, yScale)
           .attr("fill", colorAccessor)
           .attr("stroke", "black")
-          .attr("stroke-width", 0.5);
+          .attr("stroke-width", 0.5)
+          .labelsEnabled(true)
+          .label(labelAccessor);
 
         // Guideline to show current time
         var now_date_time = new Date();
@@ -177,7 +185,7 @@ var PlottableUtil = {
         var yScale = PlottableUtil.CategoryScale();
         var yAxis = PlottableUtil.CategoryAxis(yScale, "left");
 
-        var xAccessor = function(d) { return d.desc; }
+        var xAccessor = function(d) { return d.id; }
         var yAccessor = function(d) { return 1; }
 
         var data = shared_data.game_raw_data;
@@ -185,39 +193,30 @@ var PlottableUtil = {
 
         var colorScale = shared_data.game_color_scale;
         var colorAccessor = function(d) { return colorScale[d.id]; }
+        var labelAccessor = function(d) { return d.desc; }
 
         var plot = new Plottable.Plots.Rectangle()
           .addDataset(dataset)
           .x(xAccessor, xScale)
           .y(yAccessor, yScale)
           .attr("fill", colorAccessor)
-          .attr("stroke", "#fff")
-          .attr("stroke-width", 5);
-
-        var highlighter = new Plottable.Plots.Rectangle()
-          .addDataset(dataset)
-          .x(xAccessor, xScale)
-          .y(yAccessor, yScale)
-          .attr("fill", "black")
-          .attr("fill-opacity", 0);
+          .labelsEnabled(true)
+          .label(labelAccessor)
+          .attr("stroke", "#FFF")
+          .attr("stroke-width", 10);
 
         var interaction = new Plottable.Interactions.Click();
         interaction.onClick(function(point) {
           shared_data.picked_game = plot.entitiesAt(point)[0].datum.id; // Update shared_data
-          var nearest = highlighter.entityNearest(point);
-          highlighter.entities().forEach(function(entity) {
-                entity.selection.attr("fill-opacity", 0);
+          var nearest = plot.entityNearest(point);
+          plot.entities().forEach(function(entity) {
+                entity.selection.attr("stroke", "#FFF");
           });
-          nearest.selection.attr("fill-opacity", 0.3);
+          nearest.selection.attr("stroke", "yellow");
         });
         interaction.attachTo(plot);
 
-        var plots = new Plottable.Components.Group([xAxis, highlighter]);
-        var chart = new Plottable.Components.Table([
-                          [yAxis, plot],
-                          [null,  plots]
-                        ]);
-
+        var chart = new Plottable.Components.Table([[plot]]);
         // Update shared_data
         shared_data.game_chart = chart;
     },
@@ -257,7 +256,7 @@ var PlottableUtil = {
           .y(yAccessor1, yScale1)
           .attr("fill", colorAccessor)
           .animated(true)
-          .labelsEnabled(true)
+          .labelsEnabled(true);
 
         var group1 = new Plottable.Components.Group([plot1, legend1, title1]);
 

@@ -22,6 +22,7 @@
     <script type="text/javascript" src="../js/third_party/underscore-min.js"></script>
     <script type="text/javascript" src="../js/third_party/jquery-ui.js"></script>
 
+    <link rel="stylesheet" href="../css/util.css">
     <script type="text/javascript" src="../js/miscutil.js"></script>
     <script type="text/javascript" src="../js/dbutil.js"></script>
     <script type="text/javascript" src="../js/plottableutil.js"></script>
@@ -38,7 +39,8 @@
         game_chart: null,
         game_raw_data: null,
         picked_game: -1,
-        game_color_scale: ["gray", "aqua", "lime", "maroon", "purple", "red", "blue", "green", "yellow", "olive"],
+        game_id_to_desc: {},
+        game_color_scale: ["gray", "aqua", "lime", "maroon", "purple", "red", "blue", "green", "olive"],
         color_undefined: "white",
         prev_scroll_val: 0
       };
@@ -65,16 +67,22 @@
 </head>
 
 <body>
+<div id="scrollable">
   <br>
   <center> <h1> CURRENT GAMES </h1> </center>
   <br>
   <center> <p> <input type="text" id="datepicker"></p> </center>
   <br>
+</div>
+
+<div id="scrollable">
   <svg id="occupancy" width=200% height="600"></svg>
+</div>
+
+<div id="scrollable">
   <center> <h3> Click and pick a game to start, pick empty to stop a game. </h3> </center>
-  <center> <svg id="game_list" width=80% height="100"></svg> </center>
-  <br>
-  <br>
+  <center> <svg id="game_list" width=80% height="80"></svg> </center>
+</div>
 
   <script>
     $(function() {
@@ -105,20 +113,29 @@
       $("#datepicker").val(MiscUtil.date_to_str(today)); 
 
       /***************************************************************************
-      // Fetch occupancy data for today from the database and show
+      // Fetch game data and show the game picker table
+      // Then fetch occupancy data for today from the database and show
+      // Note that we need to know the game colors before rendering occupancy data,
+      // hence the callback nesting
       ****************************************************************************/
       var occupancy_callback = function (data) {
         timetable_data.occupancy_raw_data = data;
         PlottableUtil.OccupancyChart(timetable_data);
         timetable_data.occupancy_chart.renderTo("#occupancy");
       };
-      DbUtil.fetchOccupancy({"year":year, "month": month, "day":day}, occupancy_callback);
 
-      // Also, show the game picker table
       var game_callback = function(data) {
         timetable_data.game_raw_data = data;
         PlottableUtil.GameChart(timetable_data);
         timetable_data.game_chart.renderTo("#game_list");
+
+        for (var i = 0; i < timetable_data.game_raw_data.length; i++) {
+          var id = timetable_data.game_raw_data[i].id;
+          var desc = timetable_data.game_raw_data[i].desc;
+          timetable_data.game_id_to_desc[id] = desc;
+        }
+        
+        DbUtil.fetchOccupancy({"year":year, "month": month, "day":day}, occupancy_callback);
       };
       DbUtil.fetchGames(game_callback);
 
