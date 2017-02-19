@@ -21,7 +21,6 @@ exports.reports = function(req, res){
  ************************************************************************/
 
 exports.insertOccupancy = function(req, res){
-  console.log(req.body)
   var RADIX = 10;
   var table_id = parseInt(req.body.table_id, RADIX);
   var game_id = parseInt(req.body.game_id, RADIX);
@@ -35,6 +34,7 @@ exports.insertOccupancy = function(req, res){
   var dow = d.getDay();
   var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)")
   query.run(table_id, game_id, year, month, day, day_chunk, dow);
+  winston.log('info', 'REPLACE INTO OCCUPANCY VALUES ' + [table_id, game_id, year, month, day, day_chunk, dow]);
   res.json({status: "pass"}) // TODO: Modify this to indicate status of query
 };
 
@@ -186,6 +186,8 @@ exports.fetchWeeklyTableHours = function(req, res){
 exports.refreshDb = function(req, res){
   // Create tables and poupulate the DB with dummy data
 
+  winston.log('info', 'Inside refreshDb');
+
   db.serialize(function() {
     // ================================================================================
     // Create tables
@@ -275,7 +277,7 @@ exports.refreshDb = function(req, res){
           var day = d.getDate();
           var dow = d.getDay();
           var stmt = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)");
-          console.log("Inserting: " + [table_id, game_id, year, month, day, day_chunk, dow])
+          winston.log('info', "Inserting: " + [table_id, game_id, year, month, day, day_chunk, dow])
           stmt.run(table_id, game_id, year, month, day, day_chunk, dow);
           itrs++;
         }

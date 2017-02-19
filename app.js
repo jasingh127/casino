@@ -6,6 +6,7 @@ var routes = require('./routes');
 var path = require('path');
 var sqlite = require('sqlite3').verbose();
 var fs = require('fs');
+winston = require('winston') // global variable
 
 var app = express();
 app.set('port', process.env.PORT || 3000);
@@ -16,10 +17,13 @@ app.use(express.static(__dirname));
 var cors = require('cors');
 app.use(cors());
 
+// Configuring logger
+winston.add(winston.transports.File, { filename: path.join(__dirname, 'data/log.txt')});
+
 function createDatabase() {
-  console.log("Initializing DB connection...")
+  winston.log('info', 'Initializing DB connection...')
   // Create db tables
-  db = new sqlite.Database(path.join(__dirname, 'data/casino_tables.db'));
+  db = new sqlite.Database(path.join(__dirname, 'data/casino_tables.db')); // global variable
 }
 
 // Initialize connection to database
@@ -67,6 +71,7 @@ var update_occupancy = function(t1, t2) {
         filled_table_ids.push(rows[i]["table_id"]);
     });
 
+  winston.log('info', 'Inside update_occupancy');
   // Add entries for tables which are not filled
   db.all("SELECT * FROM OCCUPANCY WHERE year = ? AND month = ? AND day = ? \
     AND day_chunk = ? AND dow = ?", year1, month1, day1, day_chunk1, dow1,
@@ -76,7 +81,8 @@ var update_occupancy = function(t1, t2) {
         var table_id = rows[i]["table_id"];
         if (filled_table_ids.indexOf(table_id) < 0) {
           var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)");
-          query.run(table_id, rows[i]["game_id"], year2, month2, day2, day_chunk2, dow2);   
+          query.run(table_id, rows[i]["game_id"], year2, month2, day2, day_chunk2, dow2);
+          winston.log('info', 'REPLACE INTO OCCUPANCY VALUES ' + [table_id, rows[i]["game_id"], year2, month2, day2, day_chunk2, dow2]);   
         }
       }
     });
