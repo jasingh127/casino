@@ -16,6 +16,9 @@ exports.reports = function(req, res){
   res.sendFile('reports.html', {root: __dirname + '/../html'});
 };
 
+exports.logs = function(req, res){
+  res.sendFile('logs.html', {root: __dirname + '/../html'});
+};
 /************************************************************************
  Rest API for Database operations.
  ************************************************************************/
@@ -34,7 +37,7 @@ exports.insertOccupancy = function(req, res){
   var dow = d.getDay();
   var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)")
   query.run(table_id, game_id, year, month, day, day_chunk, dow);
-  winston.log('info', 'REPLACE INTO OCCUPANCY VALUES ' + [table_id, game_id, year, month, day, day_chunk, dow]);
+  logger.info('REPLACE INTO OCCUPANCY VALUES ' + [table_id, game_id, year, month, day, day_chunk, dow]);
   res.json({status: "pass"}) // TODO: Modify this to indicate status of query
 };
 
@@ -183,10 +186,31 @@ exports.fetchWeeklyTableHours = function(req, res){
   );
 };
 
+// Fetch log data for a single day
+exports.fetchLogs = function(req, res){
+  // console.log(req.body)
+  var year = Number(req.body.year)
+  var month = Number(req.body.month)
+  var day = Number(req.body.day)
+
+  var datestring = year + '-' + ('0' + (month+1)).slice(-2) + '-' + ('0' + day).slice(-2);
+  var file = datestring + "_log.txt";
+  var baseDir = __dirname + '/../logs';
+
+  fs.exists(baseDir + '/' + file, function(exists) {
+    if (exists) {
+      res.sendFile(file, {root: __dirname + '/../logs'});
+    }
+    else {
+      res.send("No logs exist for a date.")
+    }
+  });
+}
+
 exports.refreshDb = function(req, res){
   // Create tables and poupulate the DB with dummy data
 
-  winston.log('info', 'Inside refreshDb');
+  logger.info('Inside refreshDb');
 
   db.serialize(function() {
     // ================================================================================
@@ -252,8 +276,9 @@ exports.refreshDb = function(req, res){
     // Insert dummy occupancy data for each day in the duration below
     // ================================================================================
 
-    var start_date = new Date(2017, 0, 1);  
+    var start_date = new Date(2017, 1, 20);  
     var now = new Date();
+    console.log("Refresh: " + now)
     var now_day_chunk = exports.hour_min_to_day_chunk(now.getHours(), now.getMinutes());
     var game_id = 0;
     var PERSISTENCE_PROB = 0.7;
@@ -277,7 +302,7 @@ exports.refreshDb = function(req, res){
           var day = d.getDate();
           var dow = d.getDay();
           var stmt = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)");
-          winston.log('info', "Inserting: " + [table_id, game_id, year, month, day, day_chunk, dow])
+          logger.info("Inserting: " + [table_id, game_id, year, month, day, day_chunk, dow])
           stmt.run(table_id, game_id, year, month, day, day_chunk, dow);
           itrs++;
         }

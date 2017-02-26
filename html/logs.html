@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+    <title> Application Logs </title>
+
+    <link rel="stylesheet" href="../css/third_party/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/third_party/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="../css/third_party/jquery-ui.css">
+
+    <script type="text/javascript" src="../js/third_party/jquery-2.2.0.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/d3-jetpack.js"></script>
+    <script type="text/javascript" src="../js/third_party/underscore-min.js"></script>
+    <script type="text/javascript" src="../js/third_party/jquery-ui.js"></script>
+
+    <link rel="stylesheet" href="../css/util.css">
+    <script type="text/javascript" src="../js/miscutil.js"></script>
+
+    <script>
+      $( function() { 
+        date_picker_callback = function(date) {
+          var year = date.getFullYear();
+          var month = date.getMonth();
+          var day = date.getDate();
+          $.post(MiscUtil.db_server_address + "/fetchLogs",
+            {"year":year, "month": month, "day":day},
+            function(data, status){$('#log').html(data);});
+        }
+        MiscUtil.date_picker_helper("#datepicker", date_picker_callback); 
+      });
+    </script>
+
+</head>
+
+<body>
+  <div id="scrollable">
+    <br>
+    <center> <h1> Application Logs </h1> </center>
+    <center> <p> <input type="text" id="datepicker"></p> </center>
+  </div>
+
+  <div id="log" style="margin: 0 auto; width:800px;">
+  </div>
+
+  <script>
+    $(function() {
+      /***************************************************************************
+      // Automatically refresh the page if no user activity happens for some time
+      ****************************************************************************/
+      var N_REFRESH_SECS = 120;
+      var last_refresh_time = new Date().getTime();
+      $(document.body).bind("mousemove keypress", function(e) {
+        last_refresh_time = new Date().getTime();
+      });
+
+      function refresh() {
+        if(new Date().getTime() - last_refresh_time >= N_REFRESH_SECS*1000) 
+          window.location.reload(true);
+        else 
+          setTimeout(refresh, 20000);
+      }
+      setTimeout(refresh, 20000);
+
+      /***************************************************************************
+      // Show today's date in the input box
+      ****************************************************************************/
+      var today = new Date();
+      var year = today.getFullYear();
+      var month = today.getMonth();
+      var day = today.getDate();
+      $("#datepicker").val(MiscUtil.date_to_str(today)); 
+
+      /***************************************************************************
+      // Fetch log data and show
+      ****************************************************************************/
+      $.post(MiscUtil.db_server_address + "/fetchLogs",
+      {"year":year, "month": month, "day":day},
+      function(data, status){$('#log').html(data);});
+    });
+    
+
+  </script>
+</body>

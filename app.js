@@ -1,12 +1,15 @@
 // Main Server side application code
 
+/***************************************************************************
 // Module dependencies
+***************************************************************************/
 var express = require('express');
 var routes = require('./routes');
 var path = require('path');
 var sqlite = require('sqlite3').verbose();
-var fs = require('fs');
-winston = require('winston') // global variable
+fs = require('fs'); // global fs variable
+var winston = require('winston')
+require('winston-daily-rotate-file');
 
 var app = express();
 app.set('port', process.env.PORT || 3000);
@@ -17,13 +20,34 @@ app.use(express.static(__dirname));
 var cors = require('cors');
 app.use(cors());
 
-// Configuring logger
-winston.add(winston.transports.File, { filename: path.join(__dirname, 'data/log.txt')});
+/***************************************************************************
+// Logger
+***************************************************************************/
+const tsFormat = () => (new Date()).toLocaleTimeString();
+var transport = new winston.transports.DailyRotateFile({
+  localTime: true,
+  json: false,
+  timestamp: tsFormat,
+  dirname: path.join(__dirname, 'logs/'),
+  filename: 'log.txt',
+  datePattern: 'yyyy-MM-dd_',
+  maxFiles: 5,
+  prepend: true
+});
 
+logger = new (winston.Logger)({ // global logger variable
+  transports: [
+    transport
+  ]
+});
+
+/***************************************************************************
+// Database
+***************************************************************************/
 function createDatabase() {
-  winston.log('info', 'Initializing DB connection...')
+  logger.info('Initializing DB connection...')
   // Create db tables
-  db = new sqlite.Database(path.join(__dirname, 'data/casino_tables.db')); // global variable
+  db = new sqlite.Database(path.join(__dirname, 'data/casino_tables.db')); // global db variable
 }
 
 // Initialize connection to database
@@ -33,10 +57,12 @@ createDatabase();
 app.get('/', routes.index);
 app.get('/timetable', routes.timetable);
 app.get('/reports', routes.reports);
+app.get('/logs', routes.logs);
 app.get('/refreshDb', routes.refreshDb);
 app.get('/fetchGames', routes.fetchGames)
 app.get('/fetchTables', routes.fetchTables)
 app.post('/fetchOccupancy', routes.fetchOccupancy);
+app.post('/fetchLogs', routes.fetchLogs);
 app.post('/fetchWeeklyTableHours', routes.fetchWeeklyTableHours);
 app.post('/insertOccupancy', routes.insertOccupancy);
 app.post('/insertTables', routes.insertOccupancy);
@@ -71,7 +97,7 @@ var update_occupancy = function(t1, t2) {
         filled_table_ids.push(rows[i]["table_id"]);
     });
 
-  winston.log('info', 'Inside update_occupancy');
+  logger.info('Inside update_occupancy');
   // Add entries for tables which are not filled
   db.all("SELECT * FROM OCCUPANCY WHERE year = ? AND month = ? AND day = ? \
     AND day_chunk = ? AND dow = ?", year1, month1, day1, day_chunk1, dow1,
