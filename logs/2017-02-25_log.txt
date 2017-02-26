@@ -1,0 +1,70 @@
+4:41:05 PM - info: Initializing DB connection...
+4:42:05 PM - info: Inside update_occupancy
+4:43:05 PM - info: Inside update_occupancy
+4:44:05 PM - info: Inside update_occupancy
+4:45:05 PM - info: Inside update_occupancy
+4:46:05 PM - info: Inside update_occupancy
+4:47:05 PM - info: Inside update_occupancy
+4:48:05 PM - info: Inside update_occupancy
+4:49:05 PM - info: Inside update_occupancy
+4:50:05 PM - info: Inside update_occupancy
+4:51:05 PM - info: Inside update_occupancy
+4:52:05 PM - info: Inside update_occupancy
+4:53:05 PM - info: Inside update_occupancy
+4:54:05 PM - info: Inside update_occupancy
+4:55:05 PM - info: Inside update_occupancy
+4:56:05 PM - info: Inside update_occupancy
+4:57:05 PM - info: Inside update_occupancy
+4:58:05 PM - info: Inside update_occupancy
+4:59:05 PM - info: Inside update_occupancy
+5:00:05 PM - info: Inside update_occupancy
+5:01:05 PM - info: Inside update_occupancy
+5:02:05 PM - info: Inside update_occupancy
+5:05:17 PM - info: Initializing DB connection...
+5:06:17 PM - info: Inside update_occupancy
+5:07:17 PM - info: Inside update_occupancy
+5:09:12 PM - info: Initializing DB connection...
+5:09:31 PM - info: REPLACE INTO OCCUPANCY VALUES 8,6,2017,1,25,35,6
+5:09:39 PM - info: REPLACE INTO OCCUPANCY VALUES 9,0,2017,1,25,35,6
+5:10:12 PM - info: Inside update_occupancy
+5:11:12 PM - info: Inside update_occupancy
+5:12:12 PM - info: Inside update_occupancy
+5:13:12 PM - info: Inside update_occupancy
+5:14:24 PM - info: Initializing DB connection...
+5:15:24 PM - info: Inside update_occupancy
+5:16:24 PM - info: Inside update_occupancy
+5:17:09 PM - info: Initializing DB connection...
+5:17:57 PM - info: Initializing DB connection...
+5:18:57 PM - info: Inside update_occupancy
+5:19:57 PM - info: Inside update_occupancy
+5:20:55 PM - info: Initializing DB connection...
+5:21:32 PM - info: Initializing DB connection...
+5:22:32 PM - info: Inside update_occupancy
+5:23:32 PM - info: Inside update_occupancy
+5:24:32 PM - info: Inside update_occupancy
+5:25:32 PM - info: Inside update_occupancy
+5:26:32 PM - info: Inside update_occupancy
+5:27:32 PM - info: Inside update_occupancy
+5:28:32 PM - info: Inside update_occupancy
+5:29:32 PM - info: Inside update_occupancy
+5:30:32 PM - info: Inside update_occupancy
+5:31:32 PM - info: Inside update_occupancy
+5:32:32 PM - info: Inside update_occupancy
+5:33:32 PM - info: Inside update_occupancy
+5:34:32 PM - info: Inside update_occupancy
+5:35:32 PM - info: Inside update_occupancy
+5:36:32 PM - info: Inside update_occupancy
+5:37:32 PM - info: Inside update_occupancy
+5:38:32 PM - info: Inside update_occupancy
+5:39:32 PM - info: Inside update_occupancy
+5:40:32 PM - info: Inside update_occupancy
+5:41:32 PM - info: Inside update_occupancy
+5:42:32 PM - info: Inside update_occupancy
+5:43:32 PM - info: Inside update_occupancy
+5:44:32 PM - info: Inside update_occupancy
+5:45:32 PM - info: Inside update_occupancy
+5:46:32 PM - info: Inside update_occupancy
+5:47:32 PM - info: Inside update_occupancy
+5:48:32 PM - info: Inside update_occupancy
+5:49:32 PM - info: Inside update_occupancy
+5:50:32 PM - info: Inside update_occupancy
