@@ -202,7 +202,7 @@ exports.fetchLogs = function(req, res){
       res.sendFile(file, {root: __dirname + '/../logs'});
     }
     else {
-      res.send("No logs exist for a date.")
+      res.send("No logs exist for " + datestring)
     }
   });
 }

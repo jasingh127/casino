@@ -68,6 +68,7 @@ app.post('/insertOccupancy', routes.insertOccupancy);
 app.post('/insertTables', routes.insertOccupancy);
 app.post('/insertGames', routes.insertOccupancy);
 
+var MILLISEC_PER_MIN = 60000;
 /************************************************************************
 Periodic function to update the database based on current status of tables
 
@@ -79,19 +80,19 @@ our process sleeps for a duration much longer than a day chunk.
 ************************************************************************/
 var update_occupancy = function() {
   logger.info("Running Periodic Update Occupancy Function");
-  var t1 = new Date();
-  var year1 = t1.getFullYear();
-  var month1 = t1.getMonth();
-  var day1 = t1.getDate();
-  var day_chunk1 = routes.hour_min_to_day_chunk(t1.getHours(), t1.getMinutes());
+  var now = new Date();
+  var year1 = now.getFullYear();
+  var month1 = now.getMonth();
+  var day1 = now.getDate();
+  var day_chunk1 = routes.hour_min_to_day_chunk(now.getHours(), now.getMinutes());
 
   // Get a list of tables
   db.all("SELECT * FROM TABLES", 
   function (err_tbl, rows_tbl) {
     // For each table_id, let's fill the gaps
     for (var i = 0; i < rows_tbl.length; i++) {
-      var table_id_val = rows_tbl[i]["table_id"];
-      db.all("SELECT * FROM OCCUPANCY WHERE table_id = ? ORDER BY year DESC, month DESC, day DESC, day_chunk DESC LIMIT 10", table_id_val,
+      var table_id = rows_tbl[i]["table_id"];
+      db.all("SELECT * FROM OCCUPANCY WHERE table_id = ? ORDER BY year DESC, month DESC, day DESC, day_chunk DESC LIMIT 5", table_id,
         function (err, rows) {
           // Go through the entries till we find an entry with time <= cur_time, then fill the gap for that table_id
           for (var j = 0; j < rows.length; j++) {
@@ -99,30 +100,38 @@ var update_occupancy = function() {
             var month2 = rows[j]["month"];
             var day2 = rows[j]["day"];
             var day_chunk2 = rows[j]["day_chunk"];
-            if (year2 > year1 || month2 > month1 || day2 > day1 || day_chunk2 > day_chunk1)
+            var game_id = rows[j]["game_id"];
+
+            var hm1 = routes.day_chunk_to_hour_min(day_chunk1);
+            var t1 = new Date(year1, month1, day1, hm1.start_hour, hm1.start_mins);
+            var hm2 = routes.day_chunk_to_hour_min(day_chunk2);
+            var t2 = new Date(year2, month2, day2, hm2.start_hour, hm2.start_mins);
+            
+            if (t2.getTime() > t1.getTime())   // ignoring any future filled chunks
               continue;
-            // first time we reach here, we have found out entry to copy in the gap (which might be empty)
-            while (year2 < year1 || month2 < month1 || day2 < day1 || day_chunk2 < day_chunk1) {
-              var hm2 = routes.day_chunk_to_hour_min(day_chunk2);
-              var t2 = new Date(year2, month2, day2, hm2.start_hour, hm2.start_mins + routes.MINS_PER_DAY_CHUNK); // advance by 1 chunk
+
+            if (t2.getTime() == t1.getTime())  // current chunk is already filled, nothing to do
+              break; 
+
+            // last filled chunk before current chunk, copy this till (including) current chunk
+            while (t2.getTime() < t1.getTime()) {
+              t2 = new Date(t2.getTime() + routes.MINS_PER_DAY_CHUNK * MILLISEC_PER_MIN); // advance by 1 chunk
               year2 = t2.getFullYear();
               month2 = t2.getMonth();
               day2 = t2.getDate();
               day_chunk2 = routes.hour_min_to_day_chunk(t2.getHours(), t2.getMinutes());
               var dow2 = t2.getDay();
               var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)");
-              query.run(table_id_val, rows[j]["game_id"], year2, month2, day2, day_chunk2, dow2);
-              logger.info("Running: REPLACE INTO OCCUPANCY VALUES" + [table_id_val, rows[j]["game_id"], year2, month2, day2, day_chunk2, dow2]);
+              query.run(rows[j]["table_id"], game_id, year2, month2, day2, day_chunk2, dow2);
+              logger.info("t2: " + t2 + ", t1: " + t1);
+              logger.info("Copying game = " + game_id + " for table " + rows[j]["table_id"]);
             }
-            // After filling the gap, we break this inner for loop
-            break;
+            break; // we filled the gap for this table using the last filled chunk, should quit the inner loop
           } 
         });
     }
   });
 }
-
-var MILLISEC_PER_MIN = 60000;
 
 setInterval(function () {
   update_occupancy();
