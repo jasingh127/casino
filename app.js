@@ -23,12 +23,17 @@ app.use(cors());
 /***************************************************************************
 // Logger
 ***************************************************************************/
+var logger_directory = path.join(__dirname, 'logs/');
+if (!fs.existsSync(logger_directory)){
+    fs.mkdirSync(logger_directory);
+}
+
 const tsFormat = () => (new Date()).toLocaleTimeString();
 var transport = new winston.transports.DailyRotateFile({
   localTime: true,
   json: false,
   timestamp: tsFormat,
-  dirname: path.join(__dirname, 'logs/'),
+  dirname: logger_directory,
   filename: 'log.txt',
   datePattern: 'yyyy-MM-dd_',
   maxFiles: 5,
