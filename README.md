@@ -6,6 +6,7 @@ After downloading, first install node.js on your machine.
 Then go to the folder with app.js file and type:
 
 npm init
+
 node app.js
 
 ===============================================================
