@@ -69,12 +69,12 @@ var DbUtil = {
           var s_avg = data["result"].swing_avg_hours;
           var record = {
             x: i,
-            y1: g_avg[i],
-            y2: d_avg[i],
-            y3: s_avg[i], 
-            t1: g_tot[i],
-            t2: d_tot[i],
-            t3: s_tot[i]
+            y1: g_avg[i].toFixed(1),
+            y2: d_avg[i].toFixed(1),
+            y3: s_avg[i].toFixed(1), 
+            t1: g_tot[i].toFixed(1),
+            t2: d_tot[i].toFixed(1),
+            t3: s_tot[i].toFixed(1)
           }
           plot_data.push(record);
         }

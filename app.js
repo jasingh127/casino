@@ -69,58 +69,63 @@ app.post('/insertTables', routes.insertOccupancy);
 app.post('/insertGames', routes.insertOccupancy);
 
 /************************************************************************
-// Periodic function to update the database based on current status of tables
- t1 - prev day chunk
- t2 - current day chunk
- For each table, check if an entry for current day chunk exists in the DB,
- if not, then copy the game entry for prev day chunk into current day chunk. 
- ************************************************************************/
-var update_occupancy = function(t1, t2) {
+Periodic function to update the database based on current status of tables
+
+For each table, check if an entry for current day chunk exists in the DB,
+if not, then fetch the last exsiting entry and copy it over all the way to 
+the current time to fill the gap. Note that we adopt this design over the 
+simpler logic of looking at the prev time slot/day_chunk because sometimes 
+our process sleeps for a duration much longer than a day chunk.
+************************************************************************/
+var update_occupancy = function() {
+  logger.info("Running Periodic Update Occupancy Function");
+  var t1 = new Date();
   var year1 = t1.getFullYear();
   var month1 = t1.getMonth();
   var day1 = t1.getDate();
   var day_chunk1 = routes.hour_min_to_day_chunk(t1.getHours(), t1.getMinutes());
-  var dow1 = t1.getDay();
 
-  var year2 = t2.getFullYear();
-  var month2 = t2.getMonth();
-  var day2 = t2.getDate();
-  var day_chunk2 = routes.hour_min_to_day_chunk(t2.getHours(), t2.getMinutes());
-  var dow2 = t2.getDay();
-
-  // These tables already have an entry, don't modify those
-  var filled_table_ids = [];
-  db.all("SELECT * FROM OCCUPANCY WHERE year = ? AND month = ? AND day = ? \
-    AND day_chunk = ? AND dow = ?", year2, month2, day2, day_chunk2, dow2,
-    function (err, rows) {
-      for (var i = 0; i < rows.length; i++)
-        filled_table_ids.push(rows[i]["table_id"]);
-    });
-
-  logger.info('Inside update_occupancy');
-  // Add entries for tables which are not filled
-  db.all("SELECT * FROM OCCUPANCY WHERE year = ? AND month = ? AND day = ? \
-    AND day_chunk = ? AND dow = ?", year1, month1, day1, day_chunk1, dow1,
-    function (err, rows) {
-      for (var i = 0; i < rows.length; i++) {
-        // update the db with new entry
-        var table_id = rows[i]["table_id"];
-        if (filled_table_ids.indexOf(table_id) < 0) {
-          var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)");
-          query.run(table_id, rows[i]["game_id"], year2, month2, day2, day_chunk2, dow2);
-          winston.log('info', 'REPLACE INTO OCCUPANCY VALUES ' + [table_id, rows[i]["game_id"], year2, month2, day2, day_chunk2, dow2]);   
-        }
-      }
-    });
+  // Get a list of tables
+  db.all("SELECT * FROM TABLES", 
+  function (err_tbl, rows_tbl) {
+    // For each table_id, let's fill the gaps
+    for (var i = 0; i < rows_tbl.length; i++) {
+      var table_id_val = rows_tbl[i]["table_id"];
+      db.all("SELECT * FROM OCCUPANCY WHERE table_id = ? ORDER BY year DESC, month DESC, day DESC, day_chunk DESC LIMIT 10", table_id_val,
+        function (err, rows) {
+          // Go through the entries till we find an entry with time <= cur_time, then fill the gap for that table_id
+          for (var j = 0; j < rows.length; j++) {
+            var year2 = rows[j]["year"];
+            var month2 = rows[j]["month"];
+            var day2 = rows[j]["day"];
+            var day_chunk2 = rows[j]["day_chunk"];
+            if (year2 > year1 || month2 > month1 || day2 > day1 || day_chunk2 > day_chunk1)
+              continue;
+            // first time we reach here, we have found out entry to copy in the gap (which might be empty)
+            while (year2 < year1 || month2 < month1 || day2 < day1 || day_chunk2 < day_chunk1) {
+              var hm2 = routes.day_chunk_to_hour_min(day_chunk2);
+              var t2 = new Date(year2, month2, day2, hm2.start_hour, hm2.start_mins + routes.MINS_PER_DAY_CHUNK); // advance by 1 chunk
+              year2 = t2.getFullYear();
+              month2 = t2.getMonth();
+              day2 = t2.getDate();
+              day_chunk2 = routes.hour_min_to_day_chunk(t2.getHours(), t2.getMinutes());
+              var dow2 = t2.getDay();
+              var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)");
+              query.run(table_id_val, rows[j]["game_id"], year2, month2, day2, day_chunk2, dow2);
+              logger.info("Running: REPLACE INTO OCCUPANCY VALUES" + [table_id_val, rows[j]["game_id"], year2, month2, day2, day_chunk2, dow2]);
+            }
+            // After filling the gap, we break this inner for loop
+            break;
+          } 
+        });
+    }
+  });
 }
 
 var MILLISEC_PER_MIN = 60000;
 
 setInterval(function () {
-	var now = new Date();
-  var prev = new Date(now.getTime() - routes.MINS_PER_DAY_CHUNK*MILLISEC_PER_MIN);
-
-  update_occupancy(prev, now);
+  update_occupancy();
 
 }, 1 * MILLISEC_PER_MIN);
 

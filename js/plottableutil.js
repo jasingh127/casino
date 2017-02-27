@@ -246,10 +246,10 @@ var PlottableUtil = {
         .domain(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"])
         .range(colorScale);
 
-        var legend1 = new Plottable.Components.Legend(legendColorScale);
-        var title1 = new Plottable.Components.TitleLabel("Graveyard Shift 2AM - 10AM", 0) //title times are hard-coded
+        var title = new Plottable.Components.TitleLabel("Weekly Average Report - One Week - Bar Chart", 0)
         .yAlignment("top");
-
+        
+        var legend1 = new Plottable.Components.Legend(legendColorScale);
         var plot1 = new Plottable.Plots.Bar()
           .addDataset(dataset)
           .x(xAccessor, xScale)
@@ -257,13 +257,9 @@ var PlottableUtil = {
           .attr("fill", colorAccessor)
           .animated(true)
           .labelsEnabled(true);
-
-        var group1 = new Plottable.Components.Group([plot1, legend1, title1]);
+        var group1 = new Plottable.Components.Group([plot1, legend1]);
 
         var legend2 = new Plottable.Components.Legend(legendColorScale);
-        var title2 = new Plottable.Components.TitleLabel("Day Shift 10AM - 6PM", 0) //title times are hard-coded
-        .yAlignment("top");
-
         var plot2 = new Plottable.Plots.Bar()
           .addDataset(dataset)
           .x(xAccessor, xScale)
@@ -271,13 +267,9 @@ var PlottableUtil = {
           .attr("fill", colorAccessor)
           .animated(true)
           .labelsEnabled(true)
-
-        var group2 = new Plottable.Components.Group([plot2, legend2, title2]);
+        var group2 = new Plottable.Components.Group([plot2, legend2]);
 
         var legend3 = new Plottable.Components.Legend(legendColorScale);
-        var title3 = new Plottable.Components.TitleLabel("Swing Shift 6PM - 2AM", 0) //title times are hard-coded
-        .yAlignment("top");
-
         var plot3 = new Plottable.Plots.Bar()
           .addDataset(dataset)
           .x(xAccessor, xScale)
@@ -285,18 +277,25 @@ var PlottableUtil = {
           .attr("fill", colorAccessor)
           .animated(true)
           .labelsEnabled(true)
+        var group3 = new Plottable.Components.Group([plot3, legend3]);
 
-        var group3 = new Plottable.Components.Group([plot3, legend3, title3]);
+        var xlabel1 = new Plottable.Components.AxisLabel("Graveyard Shift 2AM - 10AM", "0") //times are hard-coded
+        var xlabel2 = new Plottable.Components.AxisLabel("Day Shift 10AM - 6PM", "0") // times are hard-coded
+        var xlabel3 = new Plottable.Components.AxisLabel("Swing Shift 6PM - 2AM", "0") // times are hard-coded        
 
         var yLabel1 = new Plottable.Components.AxisLabel("Avg # Tables", "270");
         var yLabel2 = new Plottable.Components.AxisLabel("Avg # Tables", "270");
         var yLabel3 = new Plottable.Components.AxisLabel("Avg # Tables", "270");
 
         var chart = new Plottable.Components.Table([
+                          [null, null, title],
                           [yLabel1, yAxis1, group1],
+                          [null, null, xlabel1],
                           [yLabel2, yAxis2, group2],
+                          [null, null, xlabel2],
                           [yLabel3, yAxis3, group3],
-                          [null, null, xAxis]
+                          [null, null, xAxis],
+                          [null, null, xlabel3]
                         ]);
 
         // Update shared_data

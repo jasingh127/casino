@@ -20,12 +20,23 @@
     <script type="text/javascript" src="../js/third_party/gunzip.min.js"></script>
     <script type="text/javascript" src="../js/third_party/underscore-min.js"></script>
     <script type="text/javascript" src="../js/third_party/jquery-ui.js"></script>
+    <script type="text/javascript" src="../js/third_party/saveSvgAsPng.js"></script>
+    <script type="text/javascript" src="../js/third_party/jspdf.debug.js"></script>
+    <script type="text/javascript" src="../js/third_party/svg_to_pdf.js"></script>
 
     <script type="text/javascript" src="../js/miscutil.js"></script>
     <script type="text/javascript" src="../js/dbutil.js"></script>
     <script type="text/javascript" src="../js/plottableutil.js"></script>
 
     <script src="https://www.google.com/cloudprint/client/cpgadget.js"></script>
+
+    <script>
+    function show_content_as_pdf(elem) {
+      svg_to_pdf($(elem)[0], function(pdf) {
+        download_pdf('SVG.pdf', pdf.output('dataurlstring'));
+      })
+    }
+    </script>
 
     <script>
       /***************************************************************************
@@ -101,22 +112,33 @@
   <center> <p> Start Date: <input type="text" id="start_date"></p> </center>
   <center> <p> End Date: <input type="text" id="end_date"></p> </center>
   <br>
-  <center> <h3> Weekly Average Report - One Week - Bar Chart </h3> </center>
-  <br>
-  <center> <svg id="weekly_bar_chart" width=80% height="1200"></svg> </center>
-  <br>
-  <center> <h3> Weekly Numbers Only For One Week </h3> </center>
-  <br>
-  <center> <svg id="weekly_numbers" width=80% height="600"></svg> </center>  <br>
-  <br>
-  <center> <h3> One Week Spreadsheet Report </h3> </center>
-  <br>
-  <center> <svg id="one_week_spreadsheet" width=80% height="600"></svg> </center>  <br>
-  <br>
-  <center> <h3> Day of the Week Game Bar Chart Comparison </h3> </center>
-  <br>
-  <center> <svg id="dow_bar_chart" width=80% height="600"></svg> </center>
-  <br>
+
+  <div id="weekly_bar_chart_div" style="border-style: solid; width: 80%; margin:0 auto;">
+    <button onclick="show_content_as_pdf('#weekly_bar_chart')"> Print </button>
+    <center> <svg id="weekly_bar_chart" width=80% height="1200"></svg> </center>
+    <br>
+  </div>
+
+  <div id="weekly_numbers_div" style="border-style: solid; width: 80%; margin:0 auto;">
+    <center> <h3> Weekly Numbers Only For One Week </h3> </center>
+    <br>
+    <center> <svg id="weekly_numbers" width=80% height="1200"></svg> </center>
+    <br>
+  </div>
+
+  <div id="one_week_spreadsheet_div" style="border-style: solid; width: 80%; margin:0 auto;">
+    <center> <h3> One Week Spreadsheet Report </h3> </center>
+    <br>
+    <center> <svg id="one_week_spreadsheet" width=80% height="600"></svg> </center>  <br>
+    <br>
+  </div>
+
+  <div id="dow_bar_chart_div" style="border-style: solid; width: 80%; margin:0 auto;">
+    <center> <h3> Day of the Week Game Bar Chart Comparison </h3> </center>
+    <br>
+    <center> <svg id="dow_bar_chart" width=80% height="600"></svg> </center>
+    <br>
+  </div>
 
   <script>
     $(function() {
@@ -149,12 +171,9 @@
       /***************************************************************************
       // Google cloud print functionality
       ****************************************************************************/
-      var gadget = new cloudprint.Gadget();
-      gadget.setPrintButton(
-        cloudprint.Gadget.createDefaultPrintButton("print_button_container")); // div id to contain the button
-      // gadget.setPrintDocument("[document mimetype]", "[document title]", "[document content]", "[encoding] (optional)");
-      gadget.setPrintDocument("url", "Test Page", "https://www.google.com/landing/cloudprint/testpage.pdf");
-
+      var gadget1 = new cloudprint.Gadget();
+      gadget1.setPrintButton(cloudprint.Gadget.createDefaultPrintButton("div_id")); // div id to contain the button
+      gadget1.setPrintDocument("dataUrl", "Weekly Bar Chart", "#weekly_bar_chart");
     }); 
 
   </script>
