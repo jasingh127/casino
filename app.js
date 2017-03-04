@@ -78,6 +78,8 @@ app.post('/insertGames', routes.insertOccupancy);
 /***************************************************************************
 // Periodic DB Update Function
 ***************************************************************************/
+routes.update_occupancy(); // run once immediately, then run periodically
+
 setInterval(function () {
   routes.update_occupancy();
 

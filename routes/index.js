@@ -33,10 +33,11 @@ exports.insertOccupancy = function(req, res){
   var start_hour = parseInt(req.body.start_hour, RADIX);
   var start_mins = parseInt(req.body.start_mins, RADIX);
   var day_chunk = exports.hour_min_to_day_chunk(start_hour, start_mins);
-  var d = new Date(year, month, day);
+  var d = new Date(year, month, day, start_hour, start_mins);
   var dow = d.getDay();
-  var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)")
-  query.run(table_id, game_id, year, month, day, day_chunk, dow);
+  var time = d.getTime();
+  var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+  query.run(table_id, game_id, year, month, day, day_chunk, dow, time);
   logger.info('Added game = ' + game_id + ' in Table ' + table_id + " at " + [year, month, day, day_chunk, dow]);
   res.json({status: "pass"}) // TODO: Modify this to indicate status of query
 };
@@ -224,11 +225,12 @@ exports.refreshDb = function(req, res){
                                                        month INTEGER, \
                                                        day INTEGER, \
                                                        day_chunk INTEGER, \
-                                                       dow INTEGER)";
+                                                       dow INTEGER, \
+                                                       time INTEGER)";
     db.run(query)
 
     // Occupancy table unique index
-    var query = "CREATE UNIQUE INDEX IF NOT EXISTS occupancy_index ON OCCUPANCY(table_id, year, month, day, day_chunk, dow)"
+    var query = "CREATE UNIQUE INDEX IF NOT EXISTS occupancy_index ON OCCUPANCY(table_id, year, month, day, day_chunk, dow, time)"
     db.run(query)
 
     // Games table
@@ -252,8 +254,7 @@ exports.refreshDb = function(req, res){
     // ================================================================================
 
     var N_TABLES = 10;
-    // var GAME_DESCS = ["Empty", "21BJ", "DHP", "BAC", "POKER", "3CP", "PGT"]
-    var GAME_DESCS = ["EMPTY", "21BJ", "DHP", "BAC", "POKER", "3CP", "PGT"]
+    var GAME_DESCS = ["Empty", "21BJ", "DHP", "BAC", "POKER", "3CP", "PGT"]
     var N_GAMES = GAME_DESCS.length - 1;
     
     // Delete existing data
@@ -301,13 +302,14 @@ exports.refreshDb = function(req, res){
           var month = d.getMonth();
           var day = d.getDate();
           var dow = d.getDay();
-          var stmt = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)");
-          logger.info("Inserting: " + [table_id, game_id, year, month, day, day_chunk, dow])
-          stmt.run(table_id, game_id, year, month, day, day_chunk, dow);
+          var time = d.getTime() + day_chunk * exports.MINS_PER_DAY_CHUNK * exports.MILLISEC_PER_MIN;
+          var stmt = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+          // logger.info("Inserting: " + [table_id, game_id, year, month, day, day_chunk, dow, time])
+          stmt.run(table_id, game_id, year, month, day, day_chunk, dow, time);
           itrs++;
         }
     }  
-    console.log("Inserted " + itrs + " records");
+    logger.info("Inserted " + itrs + " records");
 
   });
   
@@ -376,7 +378,7 @@ exports.update_occupancy = function() {
     // For each table_id, let's fill the gaps
     for (var i = 0; i < rows_tbl.length; i++) {
       var table_id = rows_tbl[i]["table_id"];
-      db.all("SELECT * FROM OCCUPANCY WHERE table_id = ? ORDER BY year DESC, month DESC, day DESC, day_chunk DESC LIMIT 5", table_id,
+      db.all("SELECT * FROM OCCUPANCY WHERE table_id = ? ORDER BY time DESC LIMIT 5", table_id,
         function (err, rows) {
           // Go through the entries till we find an entry with time <= cur_time, then fill the gap for that table_id
           // Note that in the above SELECT statement, we are getting back max 5 records, but actuallly just 2 are sufficient.
@@ -401,14 +403,15 @@ exports.update_occupancy = function() {
 
             // last filled chunk before current chunk, copy this till (including) current chunk
             while (t2.getTime() < t1.getTime()) {
-              t2 = new Date(t2.getTime() + exports.MINS_PER_DAY_CHUNK * MILLISEC_PER_MIN); // advance by 1 chunk
+              t2 = new Date(t2.getTime() + exports.MINS_PER_DAY_CHUNK * exports.MILLISEC_PER_MIN); // advance by 1 chunk
               year2 = t2.getFullYear();
               month2 = t2.getMonth();
               day2 = t2.getDate();
               day_chunk2 = exports.hour_min_to_day_chunk(t2.getHours(), t2.getMinutes());
               var dow2 = t2.getDay();
-              var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)");
-              query.run(rows[j]["table_id"], game_id, year2, month2, day2, day_chunk2, dow2);
+              var time2 = t2.getTime();
+              var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+              query.run(rows[j]["table_id"], game_id, year2, month2, day2, day_chunk2, dow2, time2);
               logger.info("t2: " + t2 + ", t1: " + t1);
               logger.info("Copying game = " + game_id + " for table " + rows[j]["table_id"]);
             }
