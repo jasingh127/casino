@@ -109,37 +109,47 @@ var PlottableUtil = {
         var click_interaction = new Plottable.Interactions.Click();
         click_interaction.onClick(function(point) {
             var entity = plot.entitiesAt(point);
-            if (entity) {
-              var record = entity[0].datum;
-              if (shared_data.picked_game >= 0) {
+            if (!entity)
+              return;
+            if (shared_data.picked_game < 0)
+              return;
+            var record = entity[0].datum;
+              
+            // First we need to search the raw occupancy data to find the correct record
+            var matches = $.grep(shared_data.occupancy_raw_data, function(e){ 
+              return (e.x === record.x && e.x2 === record.x2 && e.y === record.y); });
+            var match = matches[0]; // has to be a single match
+
+            // Ignore click if it is more than a day chunk into the future
+            var now_time = new Date();
+            var clicked_time_start = new Date(match.year, match.month, match.day, match.start_hour, match.start_mins);
+            var clicked_time_end = new Date(match.year, match.month, match.day, match.end_hour, match.end_mins);
+            var day_chunk_time_dur = clicked_time_end.getTime() - clicked_time_start.getTime();
+            if (clicked_time_start.getTime() - now_time.getTime() > day_chunk_time_dur) 
+              return; // TODO: Maybe display a message in game title telling about this
+
+            // Modify the raw occupancy data and refresh the occupancy chart
+            match.val = shared_data.picked_game;
+            PlottableUtil.refreshOccupancyChart(shared_data);
                 
-                // Modify the raw occupancy data and refresh the occupancy chart
-                // First we need to search the raw occupancy data to find the correct record
-                var matches = $.grep(shared_data.occupancy_raw_data, 
-                    function(e){ return (e.x === record.x && e.x2 === record.x2 && e.y === record.y); });
-                var match = matches[0]; // has to be a single match
-                match.val = shared_data.picked_game;
-                PlottableUtil.refreshOccupancyChart(shared_data);
-                
-                // Convert matched record format and send update request to DB
-                var db_update_record = {
-                    "table_id":    match.table_id,
-                    "game_id":     match.val,
-                    "year":        match.year,
-                    "month":       match.month,
-                    "day":         match.day,
-                    "start_hour":  match.start_hour,
-                    "start_mins":  match.start_mins,
-                    "end_hour":    match.end_hour,
-                    "end_mins":    match.end_mins
-                };
-                DbUtil.insertOccupancy(db_update_record);
-                shared_data.picked_game = -1; // disable the game pick after each click
-                // reset the text as well after 
-                // TODO: Show info about current action for few seconds first
-                shared_data.game_chart_title.text(shared_data.default_game_chart_title_text);
-              };
+            // Convert matched record format and send update request to DB
+            var db_update_record = {
+                  "table_id":    match.table_id,
+                  "game_id":     match.val,
+                  "year":        match.year,
+                  "month":       match.month,
+                  "day":         match.day,
+                  "start_hour":  match.start_hour,
+                  "start_mins":  match.start_mins,
+                  "end_hour":    match.end_hour,
+                  "end_mins":    match.end_mins
             };
+            
+            DbUtil.insertOccupancy(db_update_record);
+            shared_data.picked_game = -1; // disable the game pick after each click
+            // reset the text as well
+            // TODO: Show a dissappearing message about the current action first
+            shared_data.game_chart_title.text(shared_data.default_game_chart_title_text);
         });
         click_interaction.attachTo(plot);
 

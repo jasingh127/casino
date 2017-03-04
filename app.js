@@ -100,6 +100,8 @@ var update_occupancy = function() {
       db.all("SELECT * FROM OCCUPANCY WHERE table_id = ? ORDER BY year DESC, month DESC, day DESC, day_chunk DESC LIMIT 5", table_id,
         function (err, rows) {
           // Go through the entries till we find an entry with time <= cur_time, then fill the gap for that table_id
+          // Note that in the above SELECT statement, we are getting back max 5 records, but actuallly just 2 are sufficient.
+          // This is because we don't allow the user to modify any records more than one day chunk away in future. 
           for (var j = 0; j < rows.length; j++) {
             var year2 = rows[j]["year"];
             var month2 = rows[j]["month"];
