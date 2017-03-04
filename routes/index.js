@@ -37,7 +37,7 @@ exports.insertOccupancy = function(req, res){
   var dow = d.getDay();
   var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)")
   query.run(table_id, game_id, year, month, day, day_chunk, dow);
-  logger.info('REPLACE INTO OCCUPANCY VALUES ' + [table_id, game_id, year, month, day, day_chunk, dow]);
+  logger.info('Added game = ' + game_id + ' in Table ' + table_id + " at " + [year, month, day, day_chunk, dow]);
   res.json({status: "pass"}) // TODO: Modify this to indicate status of query
 };
 
@@ -334,6 +334,8 @@ exports.SWING_SHIFT_START = 18 * exports.CHUNKS_PER_HOUR; // 6 PM
 exports.SWING_SHIFT_END = 2 * exports.CHUNKS_PER_HOUR; // 2 AM
 exports.SWING_SHIFT_TOT_HOURS = 8.0; // 6 PM - 2 AM
 
+exports.MILLISEC_PER_MIN = 60000;
+
 exports.day_chunk_to_hour_min = function(chunk) {
   var start_hour = Math.floor(chunk * 24/exports.N_DAY_CHUNKS);
   var end_hour = Math.floor((chunk + 1) * 24/exports.N_DAY_CHUNKS);
@@ -350,3 +352,70 @@ exports.hour_min_to_day_chunk = function(hour, mins) {
 exports.random_int = function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 } 
+
+/************************************************************************
+Function to update the database based on current status of tables
+
+For each table, check if an entry for current day chunk exists in the DB,
+if not, then fetch the last exsiting entry and copy it over all the way to 
+the current time to fill the gap. Note that we adopt this design over the 
+simpler logic of looking at the prev time slot/day_chunk because sometimes 
+our process sleeps for a duration much longer than a day chunk.
+************************************************************************/
+exports.update_occupancy = function() {
+  logger.info("Running Update Occupancy Function");
+  var now = new Date();
+  var year1 = now.getFullYear();
+  var month1 = now.getMonth();
+  var day1 = now.getDate();
+  var day_chunk1 = exports.hour_min_to_day_chunk(now.getHours(), now.getMinutes());
+
+  // Get a list of tables
+  db.all("SELECT * FROM TABLES", 
+  function (err_tbl, rows_tbl) {
+    // For each table_id, let's fill the gaps
+    for (var i = 0; i < rows_tbl.length; i++) {
+      var table_id = rows_tbl[i]["table_id"];
+      db.all("SELECT * FROM OCCUPANCY WHERE table_id = ? ORDER BY year DESC, month DESC, day DESC, day_chunk DESC LIMIT 5", table_id,
+        function (err, rows) {
+          // Go through the entries till we find an entry with time <= cur_time, then fill the gap for that table_id
+          // Note that in the above SELECT statement, we are getting back max 5 records, but actuallly just 2 are sufficient.
+          // This is because we don't allow the user to modify any records more than one day chunk away in future. 
+          for (var j = 0; j < rows.length; j++) {
+            var year2 = rows[j]["year"];
+            var month2 = rows[j]["month"];
+            var day2 = rows[j]["day"];
+            var day_chunk2 = rows[j]["day_chunk"];
+            var game_id = rows[j]["game_id"];
+
+            var hm1 = exports.day_chunk_to_hour_min(day_chunk1);
+            var t1 = new Date(year1, month1, day1, hm1.start_hour, hm1.start_mins);
+            var hm2 = exports.day_chunk_to_hour_min(day_chunk2);
+            var t2 = new Date(year2, month2, day2, hm2.start_hour, hm2.start_mins);
+            
+            if (t2.getTime() > t1.getTime())   // ignoring any future filled chunks
+              continue;
+
+            if (t2.getTime() == t1.getTime())  // current chunk is already filled, nothing to do
+              break; 
+
+            // last filled chunk before current chunk, copy this till (including) current chunk
+            while (t2.getTime() < t1.getTime()) {
+              t2 = new Date(t2.getTime() + exports.MINS_PER_DAY_CHUNK * MILLISEC_PER_MIN); // advance by 1 chunk
+              year2 = t2.getFullYear();
+              month2 = t2.getMonth();
+              day2 = t2.getDate();
+              day_chunk2 = exports.hour_min_to_day_chunk(t2.getHours(), t2.getMinutes());
+              var dow2 = t2.getDay();
+              var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?)");
+              query.run(rows[j]["table_id"], game_id, year2, month2, day2, day_chunk2, dow2);
+              logger.info("t2: " + t2 + ", t1: " + t1);
+              logger.info("Copying game = " + game_id + " for table " + rows[j]["table_id"]);
+            }
+            break; // we filled the gap for this table using the last filled chunk, should quit the inner loop
+          } 
+        });
+    }
+  });
+}
+

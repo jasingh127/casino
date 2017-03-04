@@ -58,6 +58,7 @@ var DbUtil = {
     $.post(MiscUtil.db_server_address + "/fetchWeeklyTableHours", 
       params,
       function(data, status){
+        console.log(data);
         var plot_data = [];
         var DAYS_IN_WEEK = 7;
         for (var i=0; i < DAYS_IN_WEEK; i++) {
