@@ -125,8 +125,10 @@ var PlottableUtil = {
             var clicked_time_start = new Date(match.year, match.month, match.day, match.start_hour, match.start_mins);
             var clicked_time_end = new Date(match.year, match.month, match.day, match.end_hour, match.end_mins);
             var day_chunk_time_dur = clicked_time_end.getTime() - clicked_time_start.getTime();
-            if (clicked_time_start.getTime() - now_time.getTime() > day_chunk_time_dur) 
-              return; // TODO: Maybe display a message in game title telling about this
+            if (clicked_time_start.getTime() - now_time.getTime() > day_chunk_time_dur) {
+              shared_data.game_chart_title.text("Sorry, can't change an entry more than one time block in future.");
+              return;
+            }
 
             // Modify the raw occupancy data and refresh the occupancy chart
             match.val = shared_data.picked_game;
@@ -146,10 +148,11 @@ var PlottableUtil = {
             };
             
             DbUtil.insertOccupancy(db_update_record);
+            var str1 = "Changed the " + MiscUtil.date_to_hours_mins_str(clicked_time_start) + " entry on " + record.y +
+              " to " + shared_data.game_id_to_desc[shared_data.picked_game] + ".";
+            shared_data.game_chart_title.text(str1);
+
             shared_data.picked_game = -1; // disable the game pick after each click
-            // reset the text as well
-            // TODO: Show a dissappearing message about the current action first
-            shared_data.game_chart_title.text(shared_data.default_game_chart_title_text);
         });
         click_interaction.attachTo(plot);
 
@@ -167,8 +170,10 @@ var PlottableUtil = {
         });
 
         move_interaction.onPointerExit(function(point) {
-          if (shared_data.picked_game < 0)
+          if (shared_data.picked_game < 0) {
+            shared_data.game_chart_title.text(shared_data.default_game_chart_title_text);
             return;
+          }
           shared_data.game_chart_title.text("Game selected: " + shared_data.game_id_to_desc[shared_data.picked_game]);
         });
         
