@@ -64,6 +64,10 @@ createDatabase();
 app.get('/', routes.index);
 app.get('/timetable', routes.timetable);
 app.get('/reports', routes.reports);
+app.get('/report1', routes.report1);
+app.get('/report2', routes.report2);
+app.get('/report3', routes.report3);
+app.get('/report4', routes.report4);
 app.get('/logs', routes.logs);
 app.get('/refreshDb', routes.refreshDb);
 app.get('/fetchGames', routes.fetchGames)

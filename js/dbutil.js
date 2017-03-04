@@ -53,21 +53,20 @@ var DbUtil = {
       });
   },
 
-  // Fetch weekly table hours data for different shifts
-  fetchWeeklyTableHours: function (params, callback) {
+  // Fetch data for report1
+  fetchReport1Data: function (params, callback) {
     $.post(MiscUtil.db_server_address + "/fetchWeeklyTableHours", 
       params,
       function(data, status){
-        console.log(data);
         var plot_data = [];
+        var g_tot = data["result"].graveyard_tot_hours;
+        var d_tot = data["result"].day_tot_hours;
+        var s_tot = data["result"].swing_tot_hours;
+        var g_avg = data["result"].graveyard_avg_hours;
+        var d_avg = data["result"].day_avg_hours;
+        var s_avg = data["result"].swing_avg_hours;
         var DAYS_IN_WEEK = 7;
         for (var i=0; i < DAYS_IN_WEEK; i++) {
-          var g_tot = data["result"].graveyard_tot_hours;
-          var d_tot = data["result"].day_tot_hours;
-          var s_tot = data["result"].swing_tot_hours;
-          var g_avg = data["result"].graveyard_avg_hours;
-          var d_avg = data["result"].day_avg_hours;
-          var s_avg = data["result"].swing_avg_hours;
           var record = {
             x: i,
             y1: g_avg[i].toFixed(1),
@@ -80,6 +79,38 @@ var DbUtil = {
           plot_data.push(record);
         }
         callback(plot_data);
+      });
+  },
+
+  // Fetch data for report2
+  fetchReport2Data: function (params, callback) {
+    $.post(MiscUtil.db_server_address + "/fetchWeeklyTableHours", 
+      params,
+      function(data, status){
+        var tbl_data = [];
+        var g_tot = data["result"].graveyard_tot_hours;
+        var d_tot = data["result"].day_tot_hours;
+        var s_tot = data["result"].swing_tot_hours;
+        var g_avg = data["result"].graveyard_avg_hours;
+        var d_avg = data["result"].day_avg_hours;
+        var s_avg = data["result"].swing_avg_hours;
+        var DAYS_IN_WEEK = 7;
+        var DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        for (var i=0; i < DAYS_IN_WEEK; i++) {
+          var record = [
+            DAY_NAMES[i],
+            g_avg[i].toFixed(1),
+            g_tot[i].toFixed(1),
+            d_avg[i].toFixed(1),
+            d_tot[i].toFixed(1),
+            s_avg[i].toFixed(1), 
+            s_tot[i].toFixed(1),
+            ((g_avg[i] + d_avg[i] + s_avg[i])/3).toFixed(2),
+            (g_tot[i] + d_tot[i] + s_tot[i]).toFixed(1)
+          ]
+          tbl_data.push(record);
+        }
+        callback(tbl_data);
       });
   },
 

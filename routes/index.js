@@ -16,6 +16,22 @@ exports.reports = function(req, res){
   res.sendFile('reports.html', {root: __dirname + '/../html'});
 };
 
+exports.report1 = function(req, res){
+  res.sendFile('report1.html', {root: __dirname + '/../html'});
+};
+
+exports.report2 = function(req, res){
+  res.sendFile('report2.html', {root: __dirname + '/../html'});
+};
+
+exports.report3 = function(req, res){
+  res.sendFile('report3.html', {root: __dirname + '/../html'});
+};
+
+exports.report4 = function(req, res){
+  res.sendFile('report4.html', {root: __dirname + '/../html'});
+};
+
 exports.logs = function(req, res){
   res.sendFile('logs.html', {root: __dirname + '/../html'});
 };

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+    <title> Report1 </title>
+    <link rel="stylesheet" href="../css/third_party/plottable.css">
+    <link rel="stylesheet" href="../css/third_party/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/third_party/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="../css/third_party/jquery.dataTables-1.10.0.css">
+    <link rel="stylesheet" href="../css/third_party/scroller.dataTables.min.css">
+    <link rel="stylesheet" href="../css/third_party/jquery-ui.css">
+
+    <script type="text/javascript" src="../js/third_party/jquery-2.2.0.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/d3.v3.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/d3.tip.v0.6.3.js"></script>
+    <script type="text/javascript" src="../js/third_party/jquery.dataTables-1.10.0.js"></script>
+    <script type="text/javascript" src="../js/third_party/dataTables.scroller.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/plottable.js"></script>
+    <script type="text/javascript" src="../js/third_party/d3-jetpack.js"></script>
+    <script type="text/javascript" src="../js/third_party/gunzip.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/underscore-min.js"></script>
+    <script type="text/javascript" src="../js/third_party/jquery-ui.js"></script>
+    <script type="text/javascript" src="../js/third_party/saveSvgAsPng.js"></script>
+    <script type="text/javascript" src="../js/third_party/jspdf.debug.js"></script>
+    <script type="text/javascript" src="../js/third_party/svg_to_pdf.js"></script>
+
+    <script type="text/javascript" src="../js/miscutil.js"></script>
+    <script type="text/javascript" src="../js/dbutil.js"></script>
+    <script type="text/javascript" src="../js/plottableutil.js"></script>
+
+    <script src="https://www.google.com/cloudprint/client/cpgadget.js"></script>
+
+    <script>
+    function show_content_as_pdf(elem) {
+      svg_to_pdf($(elem)[0], function(pdf) {
+        download_pdf('SVG.pdf', pdf.output('dataurlstring'));
+      })
+    }
+    </script>
+
+    <script>
+      /***************************************************************************
+      // Global variables to store persistent state
+      ****************************************************************************/
+      var report_data = { 
+        start_date: null,
+        end_date: null,
+        tbl_shift_report_chart: null,
+        tbl_shift_report_dataset: null,
+        tbl_shift_raw_data: null,
+        dow_color_scale: ["lime", "maroon", "purple", "red", "blue", "green", "yellow"]
+      };
+
+      // Helper function
+      var ymd_from_report_data = function() {
+        var year1 = report_data.start_date.getFullYear();
+        var month1 = report_data.start_date.getMonth();
+        var day1 = report_data.start_date.getDate();
+
+        var year2 = report_data.end_date.getFullYear();
+        var month2 = report_data.end_date.getMonth();
+        var day2 = report_data.end_date.getDate();
+        return {year1:year1, month1:month1, day1:day1, year2:year2, month2:month2, day2:day2}
+      }
+    </script>
+
+    <script>
+      var common_tbl_refresh_helper = function() {
+        var tbl_shift_refresh_callback = function(data) {
+          report_data.tbl_shift_raw_data = data;
+          PlottableUtil.refreshTableShiftReportChart(report_data);
+          report_data.tbl_shift_report_chart.renderTo("#weekly_bar_chart");
+        }
+      
+        var ymd = ymd_from_report_data();
+        DbUtil.fetchReport1Data({"year1":ymd.year1, "month1": ymd.month1, "day1":ymd.day1, 
+          "year2":ymd.year2, "month2": ymd.month2, "day2":ymd.day2}, tbl_shift_refresh_callback);        
+      };
+
+      $( function() { 
+        start_date_callback = function(date) {
+          report_data.start_date = new Date(date.getTime());
+          report_data.end_date = new Date(date.getTime() + 60 * 60 * 24 * 6 * 1000);
+          $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
+          $("#end_date").val(MiscUtil.date_to_str(report_data.end_date));
+          common_tbl_refresh_helper();
+        };
+
+        MiscUtil.date_picker_helper("#start_date", start_date_callback); 
+      });
+
+      $( function() { 
+        end_date_callback = function(date) {
+          report_data.start_date = new Date(date.getTime() - 60 * 60 * 24 * 6 * 1000);
+          report_data.end_date = new Date(date.getTime());
+          $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
+          $("#end_date").val(MiscUtil.date_to_str(report_data.end_date)); 
+          common_tbl_refresh_helper();
+        };
+
+        MiscUtil.date_picker_helper("#end_date", end_date_callback); 
+      });
+    </script>
+
+</head>
+
+<body>
+  <br>
+  <center> <h1> Pick the week for which you want to see the report. </h1> </center>
+  <br>
+  <center> <p> Start Date: <input type="text" id="start_date"></p> </center>
+  <center> <p> End Date: <input type="text" id="end_date"></p> </center>
+  <br>
+
+  <div id="weekly_bar_chart_div" style="width: 80%; margin:0 auto;">
+    <button onclick="show_content_as_pdf('#weekly_bar_chart')"> Print </button>
+    <center> <svg id="weekly_bar_chart" width=90% height="1200"></svg> </center>
+    <br>
+  </div>
+
+  <script>
+    $(function() {
+      /***************************************************************************
+      // Show today's date in the input box
+      ****************************************************************************/
+      var today = new Date();
+      var week_ago = new Date();
+      week_ago.setDate(today.getDate() - 6);
+      
+      report_data.start_date = week_ago;
+      report_data.end_date = today;
+
+      $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
+      $("#end_date").val(MiscUtil.date_to_str(report_data.end_date)); 
+
+      /***************************************************************************
+      // Fetch weekly table hours per shift report and show
+      ****************************************************************************/
+      var tbl_shift_callback = function(data) {
+        report_data.tbl_shift_raw_data = data;
+        PlottableUtil.TableShiftReportChart(report_data);
+        report_data.tbl_shift_report_chart.renderTo("#weekly_bar_chart");
+      }
+
+      var ymd = ymd_from_report_data();
+      DbUtil.fetchReport1Data({"year1":ymd.year1, "month1": ymd.month1, "day1":ymd.day1, 
+        "year2":ymd.year2, "month2": ymd.month2, "day2":ymd.day2}, tbl_shift_callback);
+
+      /***************************************************************************
+      // Google cloud print functionality
+      ****************************************************************************/
+      var gadget1 = new cloudprint.Gadget();
+      gadget1.setPrintButton(cloudprint.Gadget.createDefaultPrintButton("div_id")); // div id to contain the button
+      gadget1.setPrintDocument("dataUrl", "Weekly Bar Chart", "#weekly_bar_chart");
+    }); 
+
+  </script>
+</body>
