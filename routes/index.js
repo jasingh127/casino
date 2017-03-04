@@ -150,11 +150,12 @@ exports.fetchWeeklyTableHours = function(req, res){
   var month2 = Number(req.body.month2)
   var day2 = Number(req.body.day2)
 
+  var time1 = new Date(year1, month1, day1).getTime();
+  var time2 = new Date(year2, month2, day2).getTime() + exports.MILLISEC_PER_DAY - 1; // we want day2 all times inclusive
+
   db.all("SELECT * FROM OCCUPANCY \
-    WHERE year BETWEEN ? AND ? \
-    AND month BETWEEN ? AND ? \
-    AND day BETWEEN ? and ? \
-    AND game_id > 0 ", year1, year2, month1, month2, day1, day2, 
+    WHERE time BETWEEN ? AND ? \
+    AND game_id > 0 ", time1, time2, 
     function (err, rows) {
       var graveyard_tot_hours = [0, 0, 0, 0, 0, 0, 0]; // 7 days of week (dow)
       var day_tot_hours       = [0, 0, 0, 0, 0, 0, 0]; // 7 days of week (dow)
@@ -337,6 +338,7 @@ exports.SWING_SHIFT_END = 2 * exports.CHUNKS_PER_HOUR; // 2 AM
 exports.SWING_SHIFT_TOT_HOURS = 8.0; // 6 PM - 2 AM
 
 exports.MILLISEC_PER_MIN = 60000;
+exports.MILLISEC_PER_DAY = 86400000;
 
 exports.day_chunk_to_hour_min = function(chunk) {
   var start_hour = Math.floor(chunk * 24/exports.N_DAY_CHUNKS);
