@@ -133,8 +133,11 @@ var PlottableUtil = {
                     "end_hour":    match.end_hour,
                     "end_mins":    match.end_mins
                 };
-                // console.log(db_update_record);
                 DbUtil.insertOccupancy(db_update_record);
+                shared_data.picked_game = -1; // disable the game pick after each click
+                // reset the text as well after 
+                // TODO: Show info about current action for few seconds first
+                shared_data.game_chart_title.text(shared_data.default_game_chart_title_text);
               };
             };
         });
@@ -195,6 +198,9 @@ var PlottableUtil = {
         var colorAccessor = function(d) { return colorScale[d.id]; }
         var labelAccessor = function(d) { return d.desc; }
 
+        var title = new Plottable.Components.TitleLabel(shared_data.default_game_chart_title_text, 0)
+        .yAlignment("top");
+        
         var plot = new Plottable.Plots.Rectangle()
           .addDataset(dataset)
           .x(xAccessor, xScale)
@@ -208,17 +214,17 @@ var PlottableUtil = {
         var interaction = new Plottable.Interactions.Click();
         interaction.onClick(function(point) {
           shared_data.picked_game = plot.entitiesAt(point)[0].datum.id; // Update shared_data
-          var nearest = plot.entityNearest(point);
-          plot.entities().forEach(function(entity) {
-                entity.selection.attr("stroke", "#FFF");
-          });
-          nearest.selection.attr("stroke", "yellow");
+          title.text("You selected: " + plot.entitiesAt(point)[0].datum.desc); // Update title
         });
         interaction.attachTo(plot);
 
-        var chart = new Plottable.Components.Table([[plot]]);
+        var chart = new Plottable.Components.Table([
+                          [title],
+                          [plot]
+                        ]);
         // Update shared_data
         shared_data.game_chart = chart;
+        shared_data.game_chart_title = title;
     },
 
     TableShiftReportChart: function (shared_data) {

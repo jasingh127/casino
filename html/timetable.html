@@ -37,11 +37,13 @@
         occupancy_raw_data: null,
         occupancy_chart_xScale: null,
         game_chart: null,
+        game_chart_title: null,
         game_raw_data: null,
-        picked_game: -1,
+        picked_game: -1,                    // -1 means no game selected
         game_id_to_desc: {},
         game_color_scale: ["gray", "aqua", "lime", "maroon", "purple", "red", "blue", "green", "olive"],
         color_undefined: "white",
+        default_game_chart_title_text: "Click and pick a game to start, pick empty to stop a game",
         prev_scroll_val: 0
       };
     </script>
@@ -79,7 +81,6 @@
 </div>
 
 <div id="scrollable">
-  <center> <h3> Click and pick a game to start, pick empty to stop a game. </h3> </center>
   <center> <svg id="game_list" width=80% height="80"></svg> </center>
 </div>
 
@@ -136,6 +137,7 @@
         
         DbUtil.fetchOccupancy({"year":year, "month": month, "day":day}, occupancy_callback);
       };
+      
       DbUtil.fetchGames(game_callback);
 
     });

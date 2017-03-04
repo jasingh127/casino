@@ -68,7 +68,6 @@
       var common_tbl_refresh_helper = function() {
         var tbl_shift_refresh_callback = function(data) {
           report_data.tbl_shift_raw_data = data;
-          // console.log(data)
           PlottableUtil.refreshTableShiftReportChart(report_data);
           report_data.tbl_shift_report_chart.renderTo("#weekly_bar_chart");
         }
