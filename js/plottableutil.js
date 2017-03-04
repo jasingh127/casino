@@ -95,7 +95,7 @@ var PlottableUtil = {
           .attr("fill", colorAccessor)
           .attr("stroke", "black")
           .attr("stroke-width", 0.5)
-          .labelsEnabled(true)
+          .labelsEnabled(true)        // Note: enabling labels makes things slow..investigate
           .label(labelAccessor);
 
         // Guideline to show current time
@@ -157,9 +157,21 @@ var PlottableUtil = {
         var move_interaction = new Plottable.Interactions.Pointer();
         move_interaction.onPointerMove(function(point) {
             var closest = plot.entityNearest(point);
+            if (!closest)
+              return;
+            if (shared_data.picked_game < 0)
+              return; // no need to show the table id if no game has been selected
+            var str1 = "Game selected: " + shared_data.game_id_to_desc[shared_data.picked_game];
+            var str2 = "Click to change the " + MiscUtil.date_to_hours_mins_str(closest.datum.x) + " entry on " + closest.datum.y;
+            shared_data.game_chart_title.text(str1 + ".    " + str2 + ".");
         });
+
         move_interaction.onPointerExit(function(point) {
+          if (shared_data.picked_game < 0)
+            return;
+          shared_data.game_chart_title.text("Game selected: " + shared_data.game_id_to_desc[shared_data.picked_game]);
         });
+        
         move_interaction.attachTo(plot);
 
         var plots = new Plottable.Components.Group([plot, guideline]);
@@ -224,7 +236,7 @@ var PlottableUtil = {
         var interaction = new Plottable.Interactions.Click();
         interaction.onClick(function(point) {
           shared_data.picked_game = plot.entitiesAt(point)[0].datum.id; // Update shared_data
-          title.text("You selected: " + plot.entitiesAt(point)[0].datum.desc); // Update title
+          title.text("Game selected: " + plot.entitiesAt(point)[0].datum.desc); // Update title
         });
         interaction.attachTo(plot);
 

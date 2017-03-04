@@ -18,16 +18,25 @@
     return {min: x_min, max: x_max};
   },
 
-  date_to_str: function(today) {
-    var year = today.getFullYear();
-    var month = today.getMonth();
-    var day = today.getDate();
+  date_to_str: function(date) {
+    var year = date.getFullYear();
+    var month = date.getMonth();
+    var day = date.getDate();
     var day_names = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
     var month_names = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", 
       "November", "December"];
-    var date_str = day_names[today.getDay()] + ", " + today.getDate() + " " + month_names[today.getMonth()] 
-      + ", " + today.getFullYear()
+    var date_str = day_names[date.getDay()] + ", " + date.getDate() + " " + month_names[date.getMonth()] 
+      + ", " + date.getFullYear()
     return date_str
+  },
+
+  date_to_hours_mins_str: function(date) {
+    var hours = date.getHours();
+    var mins = date.getMinutes();
+    if (hours > 12) {
+      return (hours - 12) + ":" + ('0' + mins).slice(-2) + " PM";
+    }
+    return hours + ":" + ('0' + mins).slice(-2) + "AM" 
   },
 
   date_picker_helper: function(element_id, on_select_callback) {
