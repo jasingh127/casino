@@ -62,5 +62,17 @@
         on_select_callback(date);
       }      
     });
+  },
+
+  game_start_stop_handler: function(table_id, game_desc, start_stop_flag) {
+    var now = Date();
+    var event;
+    if (start_stop_flag) {
+      event = " started ";
+    }
+    else {
+      event = " stopped ";
+    }
+    console.log("A game of " + game_desc + " was" + event + "on Table " + table_id + " at " + now);
   }
 }
