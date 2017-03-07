@@ -33,7 +33,7 @@
   date_to_hours_mins_str: function(date) {
     var hours = date.getHours();
     var mins = date.getMinutes();
-    if (hours > 12) {
+    if (hours >= 12) {
       return (hours - 12) + ":" + ('0' + mins).slice(-2) + " PM";
     }
     return hours + ":" + ('0' + mins).slice(-2) + "AM" 
