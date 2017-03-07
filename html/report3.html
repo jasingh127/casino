@@ -67,33 +67,60 @@
           if ( ! $.fn.DataTable.isDataTable('#weekly_numbers')) {
             $('#weekly_numbers').DataTable({
               paging:   false,
-              ordering: false,
               info:     false,
               searching: false,
               data: tbl_data,
               columns: [
-                  {title: "Day" },
-                  { title: "Graveyard Avg" },
-                  { title: "Graveyard Tot" },
-                  { title: "Day Shift Avg" },
-                  { title: "Day Shift Tot" },
-                  { title: "Swing Shift Avg" },
-                  { title: "Swing Shift Tot" },
-                  { title: "Daily Avg" },
-                  { title: "Daily Tot" }
+                  {title: "Game Type"},
+                  {title: "Table #"}, 
+
+                  { title: "Grave" },
+                  { title: "Day" },
+                  { title: "Swg" },
+                  { title: "Tot" },
+
+                  { title: "Grave" },
+                  { title: "Day" },
+                  { title: "Swg" },
+                  { title: "Tot" },
+
+                  { title: "Grave" },
+                  { title: "Day" },
+                  { title: "Swg" },
+                  { title: "Tot" },
+
+                  { title: "Grave" },
+                  { title: "Day" },
+                  { title: "Swg" },
+                  { title: "Tot" },
+
+                  { title: "Grave" },
+                  { title: "Day" },
+                  { title: "Swg" },
+                  { title: "Tot" },
+
+                  { title: "Grave" },
+                  { title: "Day" },
+                  { title: "Swg" },
+                  { title: "Tot" },
+
+                  { title: "Grave" },
+                  { title: "Day" },
+                  { title: "Swg" },
+                  { title: "Tot" },
               ]
-            });
+            }).order( [[ 0, 'asc' ], [ 1, 'asc' ]] ).draw();
           }
           else {
             var datatable = $('#weekly_numbers').dataTable().api();
             datatable.clear();
             datatable.rows.add(tbl_data);
-            datatable.draw();
+            datatable.order( [[ 0, 'asc' ], [ 1, 'asc' ]] ).draw();
           }
         }
 
         var ymd = ymd_from_report_data();
-        DbUtil.fetchReport2Data({"year1":ymd.year1, "month1": ymd.month1, "day1":ymd.day1, 
+        DbUtil.fetchReport3Data({"year1":ymd.year1, "month1": ymd.month1, "day1":ymd.day1, 
           "year2":ymd.year2, "month2": ymd.month2, "day2":ymd.day2}, tbl_shift_callback);
       };
 
@@ -133,8 +160,62 @@
   <br>
 
   <div id="weekly_numbers_div" style="width: 80%; margin:0 auto;">
-    <center> <h3> Weekly Numbers Only For One Week </h3> </center>
-    <center> <table id="weekly_numbers" class="display" width="90%"></table> </center>
+    <center> <h3> Weekly Spreadsheet Report </h3> </center>
+    <center> 
+    <table id="weekly_numbers" class="cell-border display" width="100%">
+        <thead>
+            <tr>
+                <th colspan="2"></th>
+                <th colspan="4">Sun</th>
+                <th colspan="4">Mon</th>
+                <th colspan="4">Tue</th>
+                <th colspan="4">Wed</th>
+                <th colspan="4">Thu</th>
+                <th colspan="4">Fri</th>
+                <th colspan="4">Sat</th>
+            </tr>
+            <tr>
+                <th></th>
+                <th></th>
+
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+    </table> 
+    </center>
     <br>
   </div>
 

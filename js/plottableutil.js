@@ -120,10 +120,6 @@ var PlottableUtil = {
               return (e.x === record.x && e.x2 === record.x2 && e.y === record.y); });
             var match = matches[0]; // has to be a single match
 
-            // store last game that was being played and update game played
-            var match_old_val = match.val;
-            match.val = shared_data.picked_game;
-
             // Ignore click if it is more than a day chunk into the future
             var now_time = new Date();
             var clicked_time_start = new Date(match.year, match.month, match.day, match.start_hour, match.start_mins);
@@ -134,18 +130,22 @@ var PlottableUtil = {
               return;
             }
 
+            // store last game that was being played and update game played
+            var match_old_val = match.val;
+            match.val = shared_data.picked_game;
+
             // Check to see if a game was started/stopped based on the click location
             // A game was started/stopped definitely if we clicked either on the current or next day chunk
             if (clicked_time_end.getTime() > now_time.getTime()) {
-              if (clicked_time_start.getTime() > now_time.getTime() && match_old_val < 0) {
+              if ((clicked_time_start.getTime() > now_time.getTime()) && (match_old_val < 0)) {
                 // if we clicked on the next day chunk and it was blank, then we just stopped the current game
                 // modify match_old_val to reflect this, this is a bit HACKY and will be hard to understand later
                 var prev_record_y = record.y;
                 var prev_record_start_time = record.x.getTime() - day_chunk_time_dur;
                 var prev_record_end_time = record.x2.getTime() - day_chunk_time_dur;
-                var matches = $.grep(shared_data.occupancy_raw_data, function(e){ 
+                var matches_prev = $.grep(shared_data.occupancy_raw_data, function(e){ 
                   return (e.x.getTime() === prev_record_start_time && e.x2.getTime() === prev_record_end_time && e.y === prev_record_y); });
-                var match_prev = matches[0]; // has to be a single match
+                var match_prev = matches_prev[0]; // has to be a single match
                 match_old_val = match_prev.val;                
               }
 

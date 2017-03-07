@@ -114,6 +114,31 @@ var DbUtil = {
       });
   },
 
+  // Fetch data for report3
+  fetchReport3Data: function (params, callback) {
+    $.post(MiscUtil.db_server_address + "/fetchWeeklyTableHoursSplit", 
+      params,
+      function(data, status){
+        var tbl_data = [];
+        for (var key in data["result"].table_game_dict) {
+          var record = [key.split(":")[1], key.split(":")[0]]; // game id and table id
+          var DAYS_IN_WEEK = 7;
+          var DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+          for (var i=0; i < DAYS_IN_WEEK; i++) {
+            var g_tot = data["result"].table_game_dict[key].graveyard_tot_hours;
+            var d_tot = data["result"].table_game_dict[key].day_tot_hours;
+            var s_tot = data["result"].table_game_dict[key].swing_tot_hours;
+            record.push(g_tot[i] > 0.0 ? g_tot[i].toFixed(1): "");
+            record.push(d_tot[i] > 0.0 ? d_tot[i].toFixed(1): "");
+            record.push(s_tot[i] > 0.0 ? s_tot[i].toFixed(1): "");
+            record.push((g_tot[i] + d_tot[i] + s_tot[i]) > 0.0 ? (g_tot[i] + d_tot[i] + s_tot[i]).toFixed(1): "");
+          }
+          tbl_data.push(record);
+        }
+        callback(tbl_data);
+      });
+  },
+
   fetchGames: function (callback) {
     $.get(MiscUtil.db_server_address + "/fetchGames", 
       function(data, status){

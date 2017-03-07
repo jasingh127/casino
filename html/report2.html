@@ -73,14 +73,18 @@
               data: tbl_data,
               columns: [
                   {title: "Day" },
-                  { title: "Graveyard Avg" },
-                  { title: "Graveyard Tot" },
-                  { title: "Day Shift Avg" },
-                  { title: "Day Shift Tot" },
-                  { title: "Swing Shift Avg" },
-                  { title: "Swing Shift Tot" },
-                  { title: "Daily Avg" },
-                  { title: "Daily Tot" }
+
+                  { title: "Avg" },
+                  { title: "Tot" },
+
+                  { title: "Avg" },
+                  { title: "Tot" },
+
+                  { title: "Avg" },
+                  { title: "Tot" },
+
+                  { title: "Avg" },
+                  { title: "Tot" }
               ]
             });
           }
@@ -134,7 +138,34 @@
 
   <div id="weekly_numbers_div" style="width: 80%; margin:0 auto;">
     <center> <h3> Weekly Numbers Only For One Week </h3> </center>
-    <center> <table id="weekly_numbers" class="display" width="90%"></table> </center>
+    <center> 
+    <table id="weekly_numbers" class="cell-border display" width="100%">
+        <thead>
+            <tr>
+                <th colspan="1"></th>
+                <th colspan="2">Graveyard</th>
+                <th colspan="2">Day Shift</th>
+                <th colspan="2">Swing Shift</th>
+                <th colspan="2">Daily Total</th>
+            </tr>
+            <tr>
+                <th></th>
+
+                <th></th>
+                <th></th>
+
+                <th></th>
+                <th></th>
+
+                <th></th>
+                <th></th>
+
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+    </table> 
+    </center>
     <br>
   </div>
 

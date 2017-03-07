@@ -75,6 +75,7 @@ app.get('/fetchTables', routes.fetchTables)
 app.post('/fetchOccupancy', routes.fetchOccupancy);
 app.post('/fetchLogs', routes.fetchLogs);
 app.post('/fetchWeeklyTableHours', routes.fetchWeeklyTableHours);
+app.post('/fetchWeeklyTableHoursSplit', routes.fetchWeeklyTableHoursSplit);
 app.post('/insertOccupancy', routes.insertOccupancy);
 app.post('/insertTables', routes.insertOccupancy);
 app.post('/insertGames', routes.insertOccupancy);

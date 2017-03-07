@@ -204,6 +204,78 @@ exports.fetchWeeklyTableHours = function(req, res){
   );
 };
 
+exports.fetchWeeklyTableHoursSplit = function(req, res){
+  // console.log(req.body)
+  var year1 = Number(req.body.year1)
+  var month1 = Number(req.body.month1)
+  var day1 = Number(req.body.day1)
+
+  var year2 = Number(req.body.year2)
+  var month2 = Number(req.body.month2)
+  var day2 = Number(req.body.day2)
+
+  var time1 = new Date(year1, month1, day1).getTime();
+  var time2 = new Date(year2, month2, day2).getTime() + exports.MILLISEC_PER_DAY - 1; // we want day2 all times inclusive
+
+  db.all("SELECT * FROM OCCUPANCY INNER JOIN GAMES ON OCCUPANCY.game_id = GAMES.game_id \
+    WHERE time BETWEEN ? AND ? \
+    AND OCCUPANCY.game_id > 0 ", time1, time2, 
+    function (err, rows) {
+      var table_game_dict = {};  // indexed by table_id_game_id
+      var game_dict = {};  // indexed by game_id
+      // Count number of hours of table play based on chunks accumulated (populate the two dicts
+      for (var i = 0; i < rows.length; i++) {
+        var key1 = rows[i]["table_id"] + ":" + rows[i]["game_desc"];
+        if (!table_game_dict.hasOwnProperty(key1)) {
+          table_game_dict[key1] = {
+            graveyard_tot_hours: [0, 0, 0, 0, 0, 0, 0], // 7 days of week (dow)
+            day_tot_hours:       [0, 0, 0, 0, 0, 0, 0], // 7 days of week (dow)
+            swing_tot_hours:     [0, 0, 0, 0, 0, 0, 0], // 7 days of week (dow)
+          };
+        }
+        else {
+          var chunk = rows[i]["day_chunk"];
+          var dow = rows[i]["dow"];
+          if (chunk >= exports.GRAVEYARD_SHIFT_START && chunk < exports.GRAVEYARD_SHIFT_END) {
+            table_game_dict[key1].graveyard_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
+          }
+          else if (chunk >= exports.DAY_SHIFT_START && chunk < exports.DAY_SHIFT_END) {
+            table_game_dict[key1].day_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
+          }
+          else if (chunk >= exports.SWING_SHIFT_START || chunk < exports.SWING_SHIFT_END) {   // || because (18, 2)
+            table_game_dict[key1].swing_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
+          }
+        }
+
+        var key2 = rows[i]["game_desc"];
+        if (!game_dict.hasOwnProperty(key2)) {
+          game_dict[key2] = {
+            graveyard_tot_hours: [0, 0, 0, 0, 0, 0, 0], // 7 days of week (dow)
+            day_tot_hours:       [0, 0, 0, 0, 0, 0, 0], // 7 days of week (dow)
+            swing_tot_hours:     [0, 0, 0, 0, 0, 0, 0], // 7 days of week (dow)
+          };
+        }
+        else {
+          var chunk = rows[i]["day_chunk"];
+          var dow = rows[i]["dow"];
+          if (chunk >= exports.GRAVEYARD_SHIFT_START && chunk < exports.GRAVEYARD_SHIFT_END) {
+            game_dict[key2].graveyard_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
+          }
+          else if (chunk >= exports.DAY_SHIFT_START && chunk < exports.DAY_SHIFT_END) {
+            game_dict[key2].day_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
+          }
+          else if (chunk >= exports.SWING_SHIFT_START || chunk < exports.SWING_SHIFT_END) {   // || because (18, 2)
+            game_dict[key2].swing_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
+          }
+        }
+      }
+
+      var result = {table_game_dict: table_game_dict, game_dict:game_dict};
+      res.json({"result":result});
+    }
+  );
+};
+
 // Fetch log data for a single day
 exports.fetchLogs = function(req, res){
   // console.log(req.body)
