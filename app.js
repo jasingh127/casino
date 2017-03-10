@@ -59,6 +59,25 @@ function createDatabase() {
 createDatabase();
 
 /***************************************************************************
+// Printer
+***************************************************************************/
+printer = require("node-thermal-printer"); // global printer variable
+printer.init({
+  type: 'epson',                  // 'star' or 'epson'
+  width: 48,                      // Number of characters in one line (default 48)
+  characterSet: 'SLOVENIA',       // Character set default SLOVENIA
+  removeSpecialCharacters: false, // Removes special characters - default: false
+  replaceSpecialCharacters: true, // Replaces special characters listed in config files - default: true
+  //lineChar: "=",                  // Use custom character for drawing lines
+  ip: routes.printer_server_address,
+  port: routes.printer_port
+});
+
+printer.isPrinterConnected(function(response){
+  console.log("Printer connected:", response);
+});
+
+/***************************************************************************
 // REST API
 ***************************************************************************/
 app.get('/', routes.index);
@@ -79,6 +98,7 @@ app.post('/fetchWeeklyTableHoursSplit', routes.fetchWeeklyTableHoursSplit);
 app.post('/insertOccupancy', routes.insertOccupancy);
 app.post('/insertTables', routes.insertOccupancy);
 app.post('/insertGames', routes.insertOccupancy);
+app.post('/print', routes.print);
 
 /***************************************************************************
 // Periodic DB Update Function

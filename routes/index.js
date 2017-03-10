@@ -406,6 +406,21 @@ exports.refreshDb = function(req, res){
 };
 
 /************************************************************************
+ Rest API for Print operations.
+ ************************************************************************/
+exports.print = function(req, res){
+  console.log(req.body.msg);
+  var msg = req.body.msg;
+  // printer.clear()
+  // printer.alignCenter();
+  // printer.drawLine();
+  // printer.println(msg);
+  // printer.drawLine();
+  // printer.cut();
+  // printer.execute();
+}
+
+/************************************************************************
  Some utility functions + Global variables
  ************************************************************************/
 exports.CHUNKS_PER_HOUR = 2;
@@ -511,4 +526,10 @@ exports.update_occupancy = function() {
     }
   });
 }
+
+/************************************************************************
+More utility functions + Global variables
+************************************************************************/
+exports.printer_server_address = '10.0.0.209'
+exports.printer_port = 9100
 

@@ -28,8 +28,6 @@
     <script type="text/javascript" src="../js/dbutil.js"></script>
     <script type="text/javascript" src="../js/plottableutil.js"></script>
 
-    <script src="https://www.google.com/cloudprint/client/cpgadget.js"></script>
-
     <script>
     function show_content_as_pdf(elem) {
       svg_to_pdf($(elem)[0], function(pdf) {
@@ -113,7 +111,6 @@
   <br>
 
   <div id="weekly_bar_chart_div" style="width: 80%; margin:0 auto;">
-    <button onclick="show_content_as_pdf('#weekly_bar_chart')"> Print </button>
     <center> <svg id="weekly_bar_chart" width=90% height="1200"></svg> </center>
     <br>
   </div>
@@ -146,12 +143,6 @@
       DbUtil.fetchReport1Data({"year1":ymd.year1, "month1": ymd.month1, "day1":ymd.day1, 
         "year2":ymd.year2, "month2": ymd.month2, "day2":ymd.day2}, tbl_shift_callback);
 
-      /***************************************************************************
-      // Google cloud print functionality
-      ****************************************************************************/
-      var gadget1 = new cloudprint.Gadget();
-      gadget1.setPrintButton(cloudprint.Gadget.createDefaultPrintButton("div_id")); // div id to contain the button
-      gadget1.setPrintDocument("dataUrl", "Weekly Bar Chart", "#weekly_bar_chart");
     }); 
 
   </script>

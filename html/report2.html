@@ -28,8 +28,6 @@
     <script type="text/javascript" src="../js/dbutil.js"></script>
     <script type="text/javascript" src="../js/plottableutil.js"></script>
 
-    <script src="https://www.google.com/cloudprint/client/cpgadget.js"></script>
-
     <script>
     function show_content_as_pdf(elem) {
       svg_to_pdf($(elem)[0], function(pdf) {
@@ -189,12 +187,6 @@
       ****************************************************************************/
       common_tbl_refresh_helper();
 
-      /***************************************************************************
-      // Google cloud print functionality
-      ****************************************************************************/
-      var gadget1 = new cloudprint.Gadget();
-      gadget1.setPrintButton(cloudprint.Gadget.createDefaultPrintButton("div_id")); // div id to contain the button
-      gadget1.setPrintDocument("dataUrl", "Weekly Bar Chart", "#weekly_numbers");
     }); 
 
   </script>

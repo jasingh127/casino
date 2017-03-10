@@ -76,6 +76,11 @@
     else {
       event = " stopped ";
     }
-    console.log("A game of " + game_desc + " was" + event + "on Table " + table_id + " at " + now);
+    
+    var msg = "A game of " + game_desc + " was" + event + "on Table " + table_id + " at " + now;
+    $.post(MiscUtil.db_server_address + "/print",
+      {"msg":msg},
+      function(data, status){console.log(data);});
+
   }
 }
