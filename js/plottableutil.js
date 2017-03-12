@@ -132,14 +132,14 @@ var PlottableUtil = {
 
             // store last game that was being played and update game played
             var match_old_val = match.val;
-            match.val = shared_data.picked_game;
+            match.val = shared_data.picked_game; // this actually updates an entry in shared_data.occupancy_raw_data
 
             // Check to see if a game was started/stopped based on the click location
             // A game was started/stopped definitely if we clicked either on the current or next day chunk
             if (clicked_time_end.getTime() > now_time.getTime()) {
               if ((clicked_time_start.getTime() > now_time.getTime()) && (match_old_val < 0)) {
                 // if we clicked on the next day chunk and it was blank, then we just stopped the current game
-                // modify match_old_val to reflect this, this is a bit HACKY and will be hard to understand later
+                // modify match_old_val to reflect this, this is a bit HACKY and might be hard to understand later
                 var prev_record_y = record.y;
                 var prev_record_start_time = record.x.getTime() - day_chunk_time_dur;
                 var prev_record_end_time = record.x2.getTime() - day_chunk_time_dur;
@@ -150,13 +150,18 @@ var PlottableUtil = {
               }
 
               // check old game (TODO: old game might be in last day chunk)
+              var print_records = [];
               if (match_old_val > 0) {
-                MiscUtil.game_start_stop_handler(match.table_id, shared_data.game_id_to_desc[match_old_val], false);
+                var print_record = {"table_id":match.table_id, "game_desc":shared_data.game_id_to_desc[match_old_val], start_stop_flag:0};
+                print_records.push(print_record);
               }              
               // check new game  
               if (match.val > 0) {
-                MiscUtil.game_start_stop_handler(match.table_id, shared_data.game_id_to_desc[match.val], true);
+                var print_record = {"table_id":match.table_id, "game_desc":shared_data.game_id_to_desc[match.val], start_stop_flag:1};
+                print_records.push(print_record);
               }
+
+              MiscUtil.game_start_stop_handler(print_records);
             }
 
             // Modify the raw occupancy data and refresh the occupancy chart

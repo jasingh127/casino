@@ -40,6 +40,7 @@ exports.logs = function(req, res){
  ************************************************************************/
 
 exports.insertOccupancy = function(req, res){
+  // console.log(req.body)
   var RADIX = 10;
   var table_id = parseInt(req.body.table_id, RADIX);
   var game_id = parseInt(req.body.game_id, RADIX);
@@ -409,15 +410,43 @@ exports.refreshDb = function(req, res){
  Rest API for Print operations.
  ************************************************************************/
 exports.print = function(req, res){
-  console.log(req.body.msg);
-  var msg = req.body.msg;
-  // printer.clear()
-  // printer.alignCenter();
-  // printer.drawLine();
-  // printer.println(msg);
-  // printer.drawLine();
-  // printer.cut();
-  // printer.execute();
+  for (var i = 0; i < req.body.records.length; i++) {
+    var record = req.body.records[i];
+    var event;
+    if (parseInt(record.start_stop_flag)) {
+      event = " game started ";
+    }
+    else {
+      event = " game ended ";
+    }
+
+    exports.printHelper(req.body.date, event, record.table_id, record.game_desc, req.body.time);
+    exports.printHelper(req.body.date, event, record.table_id, record.game_desc, req.body.time);
+
+  }
+  res.json({status: "pass"}) // TODO: Modify this to indicate status of query
+}
+
+exports.printHelper = function(date, event, table_id, game_desc, time){
+  printer.clear()
+  printer.bold(true);
+  printer.alignCenter();
+  printer.println("Casino San Pablo");
+  printer.println("GAME CARD");
+  printer.bold(false);
+  printer.println(date);
+  printer.drawLine();
+
+  printer.alignLeft();
+  printer.println("Section: Cal Side");
+  printer.println("Status: " + event);
+  printer.println("Table: " + table_id);
+  printer.println("Type: " + game_desc);
+  printer.println("Time: " + time);
+  printer.println("Flr Pers: CALLEAD");
+  printer.drawLine();
+  printer.cut();
+  printer.execute();
 }
 
 /************************************************************************

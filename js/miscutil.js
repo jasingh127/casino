@@ -67,20 +67,17 @@
     });
   },
 
-  game_start_stop_handler: function(table_id, game_desc, start_stop_flag) {
-    var now = Date();
-    var event;
-    if (start_stop_flag) {
-      event = " started ";
-    }
-    else {
-      event = " stopped ";
-    }
-    
-    var msg = "A game of " + game_desc + " was" + event + "on Table " + table_id + " at " + now;
-    $.post(MiscUtil.db_server_address + "/print",
-      {"msg":msg},
-      function(data, status){console.log(data);});
+  game_start_stop_handler: function(records) {
+    if (records.length == 0)
+      return;
 
+    var now = new Date();
+    var postData = {"records": records,
+                    "date"   : MiscUtil.date_to_str(now),
+                    "time"   : MiscUtil.date_to_hours_mins_str(now)};
+
+    $.post(MiscUtil.db_server_address + "/print",
+      postData,
+      function(data, status){console.log(data);});
   }
 }
