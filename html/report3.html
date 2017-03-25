@@ -1,40 +1,33 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <head>
-    <title> Report2 </title>
-    <link rel="stylesheet" href="../css/third_party/plottable.css">
+    <title> Report3 </title>
     <link rel="stylesheet" href="../css/third_party/bootstrap.min.css">
     <link rel="stylesheet" href="../css/third_party/bootstrap-theme.min.css">
     <link rel="stylesheet" href="../css/third_party/jquery.dataTables-1.10.0.css">
     <link rel="stylesheet" href="../css/third_party/scroller.dataTables.min.css">
     <link rel="stylesheet" href="../css/third_party/jquery-ui.css">
+    <link rel="stylesheet" href="../css/third_party/buttons.dataTables.min.css">
 
     <script type="text/javascript" src="../js/third_party/jquery-2.2.0.min.js"></script>
     <script type="text/javascript" src="../js/third_party/bootstrap.min.js"></script>
     <script type="text/javascript" src="../js/third_party/d3.v3.min.js"></script>
     <script type="text/javascript" src="../js/third_party/d3.tip.v0.6.3.js"></script>
-    <script type="text/javascript" src="../js/third_party/jquery.dataTables-1.10.0.js"></script>
+    <script type="text/javascript" src="../js/third_party/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="../js/third_party/dataTables.scroller.min.js"></script>
-    <script type="text/javascript" src="../js/third_party/plottable.js"></script>
     <script type="text/javascript" src="../js/third_party/d3-jetpack.js"></script>
     <script type="text/javascript" src="../js/third_party/gunzip.min.js"></script>
     <script type="text/javascript" src="../js/third_party/underscore-min.js"></script>
     <script type="text/javascript" src="../js/third_party/jquery-ui.js"></script>
-    <script type="text/javascript" src="../js/third_party/saveSvgAsPng.js"></script>
-    <script type="text/javascript" src="../js/third_party/jspdf.debug.js"></script>
-    <script type="text/javascript" src="../js/third_party/svg_to_pdf.js"></script>
+
+    <script type="text/javascript" src="../js/third_party/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/buttons.print.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/pdfmake.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/vfs_fonts.js"></script>
+    <script type="text/javascript" src="../js/third_party/buttons.html5.min.js"></script>
 
     <script type="text/javascript" src="../js/miscutil.js"></script>
     <script type="text/javascript" src="../js/dbutil.js"></script>
-    <script type="text/javascript" src="../js/plottableutil.js"></script>
-
-    <script>
-    function show_content_as_pdf(elem) {
-      svg_to_pdf($(elem)[0], function(pdf) {
-        download_pdf('SVG.pdf', pdf.output('dataurlstring'));
-      })
-    }
-    </script>
 
     <script>
       /***************************************************************************
@@ -44,6 +37,8 @@
         start_date: null,
         end_date: null
       };
+
+      var WEEK_NUM_DAYS = 6;  // 6 because start and end day of week are included
 
       // Helper function
       var ymd_from_report_data = function() {
@@ -106,6 +101,26 @@
                   { title: "Day" },
                   { title: "Swg" },
                   { title: "Tot" },
+              ],
+              dom: 'Bfrtip',
+              buttons: [
+                  {
+                    extend: 'pdfHtml5',
+                    download: 'open', 
+                    orientation: 'landscape',
+                    header: true,
+                    title: 'Weekly Spreadsheet Report',
+                    customize: function(doc) {
+                      console.log(doc.content)
+                      doc.styles.tableHeader.fontSize = 8;
+                      doc.defaultStyle.fontSize = 6;
+                    }
+                  },
+                  {
+                    extend: 'print',
+                    text: '<i class="fa fa-print"></i> Print',
+                    autoPrint: true
+                  }                  
               ]
             }).order( [[ 0, 'asc' ], [ 1, 'asc' ]] ).draw();
           }
@@ -120,12 +135,13 @@
         var ymd = ymd_from_report_data();
         DbUtil.fetchReport3Data({"year1":ymd.year1, "month1": ymd.month1, "day1":ymd.day1, 
           "year2":ymd.year2, "month2": ymd.month2, "day2":ymd.day2}, tbl_shift_callback);
+
       };
 
       $( function() { 
         start_date_callback = function(date) {
-          report_data.start_date = new Date(date.getTime());
-          report_data.end_date = new Date(date.getTime() + 60 * 60 * 24 * 6 * 1000);
+          report_data.start_date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+          report_data.end_date.setDate(report_data.start_date.getDate() + WEEK_NUM_DAYS);
           $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
           $("#end_date").val(MiscUtil.date_to_str(report_data.end_date));
           common_tbl_refresh_helper();
@@ -136,8 +152,8 @@
 
       $( function() { 
         end_date_callback = function(date) {
-          report_data.start_date = new Date(date.getTime() - 60 * 60 * 24 * 6 * 1000);
-          report_data.end_date = new Date(date.getTime());
+          report_data.end_date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+          report_data.start_date.setDate(report_data.end_date.getDate() - WEEK_NUM_DAYS);
           $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
           $("#end_date").val(MiscUtil.date_to_str(report_data.end_date)); 
           common_tbl_refresh_helper();
@@ -224,7 +240,7 @@
       ****************************************************************************/
       var today = new Date();
       var week_ago = new Date();
-      week_ago.setDate(today.getDate() - 6);
+      week_ago.setDate(today.getDate() - WEEK_NUM_DAYS);
       
       report_data.start_date = week_ago;
       report_data.end_date = today;

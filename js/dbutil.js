@@ -58,26 +58,13 @@ var DbUtil = {
     $.post(MiscUtil.db_server_address + "/fetchWeeklyTableHours", 
       params,
       function(data, status){
-        var plot_data = [];
-        var g_tot = data["result"].graveyard_tot_hours;
-        var d_tot = data["result"].day_tot_hours;
-        var s_tot = data["result"].swing_tot_hours;
+        // var g_tot = data["result"].graveyard_tot_hours;
+        // var d_tot = data["result"].day_tot_hours;
+        // var s_tot = data["result"].swing_tot_hours;
         var g_avg = data["result"].graveyard_avg_hours;
         var d_avg = data["result"].day_avg_hours;
         var s_avg = data["result"].swing_avg_hours;
-        var DAYS_IN_WEEK = 7;
-        for (var i=0; i < DAYS_IN_WEEK; i++) {
-          var record = {
-            x: i,
-            y1: g_avg[i].toFixed(1),
-            y2: d_avg[i].toFixed(1),
-            y3: s_avg[i].toFixed(1), 
-            t1: g_tot[i].toFixed(1),
-            t2: d_tot[i].toFixed(1),
-            t3: s_tot[i].toFixed(1)
-          }
-          plot_data.push(record);
-        }
+        var plot_data = {g_avg:g_avg, d_avg:d_avg, s_avg:s_avg};
         callback(plot_data);
       });
   },

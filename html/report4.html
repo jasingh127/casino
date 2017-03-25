@@ -2,39 +2,21 @@
 <meta charset="utf-8">
 <head>
     <title> Report1 </title>
-    <link rel="stylesheet" href="../css/third_party/plottable.css">
     <link rel="stylesheet" href="../css/third_party/bootstrap.min.css">
     <link rel="stylesheet" href="../css/third_party/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="../css/third_party/jquery.dataTables-1.10.0.css">
-    <link rel="stylesheet" href="../css/third_party/scroller.dataTables.min.css">
     <link rel="stylesheet" href="../css/third_party/jquery-ui.css">
 
     <script type="text/javascript" src="../js/third_party/jquery-2.2.0.min.js"></script>
     <script type="text/javascript" src="../js/third_party/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../js/third_party/d3.v3.min.js"></script>
-    <script type="text/javascript" src="../js/third_party/d3.tip.v0.6.3.js"></script>
-    <script type="text/javascript" src="../js/third_party/jquery.dataTables-1.10.0.js"></script>
-    <script type="text/javascript" src="../js/third_party/dataTables.scroller.min.js"></script>
-    <script type="text/javascript" src="../js/third_party/plottable.js"></script>
-    <script type="text/javascript" src="../js/third_party/d3-jetpack.js"></script>
-    <script type="text/javascript" src="../js/third_party/gunzip.min.js"></script>
     <script type="text/javascript" src="../js/third_party/underscore-min.js"></script>
     <script type="text/javascript" src="../js/third_party/jquery-ui.js"></script>
-    <script type="text/javascript" src="../js/third_party/saveSvgAsPng.js"></script>
-    <script type="text/javascript" src="../js/third_party/jspdf.debug.js"></script>
-    <script type="text/javascript" src="../js/third_party/svg_to_pdf.js"></script>
 
+    <script type="text/javascript"  src="../js/third_party/highcharts.js"></script>
+    <script type="text/javascript"  src="../js/third_party/exporting.js"></script>
+    <script type="text/javascript"  src="../js/third_party/offline-exporting.js"></script>    
+    
     <script type="text/javascript" src="../js/miscutil.js"></script>
     <script type="text/javascript" src="../js/dbutil.js"></script>
-    <script type="text/javascript" src="../js/plottableutil.js"></script>
-
-    <script>
-    function show_content_as_pdf(elem) {
-      svg_to_pdf($(elem)[0], function(pdf) {
-        download_pdf('SVG.pdf', pdf.output('dataurlstring'));
-      })
-    }
-    </script>
 
     <script>
       /***************************************************************************
@@ -44,10 +26,9 @@
         start_date: null,
         end_date: null,
         tbl_shift_report_chart: null,
-        tbl_shift_report_dataset: null,
-        tbl_shift_raw_data: null,
-        dow_color_scale: ["lime", "maroon", "purple", "red", "blue", "green", "yellow"]
       };
+
+      var WEEK_NUM_DAYS = 6;  // 6 because start and end day of week are included
 
       // Helper function
       var ymd_from_report_data = function() {
@@ -64,10 +45,12 @@
 
     <script>
       var common_tbl_refresh_helper = function() {
-        var tbl_shift_refresh_callback = function(data) {
-          report_data.tbl_shift_raw_data = data;
-          PlottableUtil.refreshTableShiftReportChart(report_data);
-          report_data.tbl_shift_report_chart.renderTo("#weekly_bar_chart");
+        var tbl_shift_refresh_callback = function(plot_data) {
+          tbl_shift_report_chart.series[0].update({data: plot_data.g_avg});
+          tbl_shift_report_chart.series[1].update({data: plot_data.d_avg});
+          tbl_shift_report_chart.series[2].update({data: plot_data.s_avg});
+          var week_str = MiscUtil.date_to_str(report_data.start_date) + ' - ' + MiscUtil.date_to_str(report_data.end_date);
+          tbl_shift_report_chart.subtitle.update({text: week_str});
         }
       
         var ymd = ymd_from_report_data();
@@ -77,8 +60,8 @@
 
       $( function() { 
         start_date_callback = function(date) {
-          report_data.start_date = new Date(date.getTime());
-          report_data.end_date = new Date(date.getTime() + 60 * 60 * 24 * 6 * 1000);
+          report_data.start_date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+          report_data.end_date.setDate(report_data.start_date.getDate() + WEEK_NUM_DAYS);
           $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
           $("#end_date").val(MiscUtil.date_to_str(report_data.end_date));
           common_tbl_refresh_helper();
@@ -89,8 +72,8 @@
 
       $( function() { 
         end_date_callback = function(date) {
-          report_data.start_date = new Date(date.getTime() - 60 * 60 * 24 * 6 * 1000);
-          report_data.end_date = new Date(date.getTime());
+          report_data.end_date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+          report_data.start_date.setDate(report_data.end_date.getDate() - WEEK_NUM_DAYS);
           $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
           $("#end_date").val(MiscUtil.date_to_str(report_data.end_date)); 
           common_tbl_refresh_helper();
@@ -110,10 +93,7 @@
   <center> <p> End Date: <input type="text" id="end_date"></p> </center>
   <br>
 
-  <div id="weekly_bar_chart_div" style="width: 80%; margin:0 auto;">
-    <center> <svg id="weekly_bar_chart" width=90% height="1200"></svg> </center>
-    <br>
-  </div>
+  <div id="weekly_bar_chart" style="min-width: 310px; height: 400px; margin:0 auto"> </div>
 
   <script>
     $(function() {
@@ -122,7 +102,7 @@
       ****************************************************************************/
       var today = new Date();
       var week_ago = new Date();
-      week_ago.setDate(today.getDate() - 6);
+      week_ago.setDate(today.getDate() - WEEK_NUM_DAYS);
       
       report_data.start_date = week_ago;
       report_data.end_date = today;
@@ -131,17 +111,70 @@
       $("#end_date").val(MiscUtil.date_to_str(report_data.end_date)); 
 
       /***************************************************************************
+      // Create High Chart
+      ****************************************************************************/
+      tbl_shift_report_chart = Highcharts.chart('weekly_bar_chart', {
+        chart: {
+          type: 'column'
+        },
+        title: {
+          text: 'Weekly Average Report - One Week - Bar Chart'
+        },
+        subtitle: {
+          text: 'Start - End'
+        },
+        xAxis: {
+          categories: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+          crosshair: true
+        },
+        yAxis: {
+          min: 0,
+          title: { 
+            text: 'Avg # Tables'
+          }
+        },
+        tooltip: {
+          headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+          pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+          '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+          footerFormat: '</table>',
+          shared: true,
+          useHTML: true
+        },
+        plotOptions: {
+          column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+          }
+        },
+        series: [
+        {
+          name: 'Graveyard Shift 2 AM - 10 AM',
+          data: []
+        },
+        {
+          name: 'Day Shift 10 AM - 6 PM',
+          data: []
+        },
+        {
+          name: 'Swing Shift 6 PM - 2 AM',
+          data: []
+        }]
+      });
+      /***************************************************************************
       // Fetch weekly table hours per shift report and show
       ****************************************************************************/
-      var tbl_shift_callback = function(data) {
-        report_data.tbl_shift_raw_data = data;
-        PlottableUtil.TableShiftReportChart(report_data);
-        report_data.tbl_shift_report_chart.renderTo("#weekly_bar_chart");
+      var tbl_shift_refresh_callback = function(plot_data) {
+        tbl_shift_report_chart.series[0].update({data: plot_data.g_avg});
+        tbl_shift_report_chart.series[1].update({data: plot_data.d_avg});
+        tbl_shift_report_chart.series[2].update({data: plot_data.s_avg});
+        var week_str = MiscUtil.date_to_str(report_data.start_date) + ' - ' + MiscUtil.date_to_str(report_data.end_date);
+        tbl_shift_report_chart.subtitle.update({text: week_str});
       }
 
       var ymd = ymd_from_report_data();
       DbUtil.fetchReport1Data({"year1":ymd.year1, "month1": ymd.month1, "day1":ymd.day1, 
-        "year2":ymd.year2, "month2": ymd.month2, "day2":ymd.day2}, tbl_shift_callback);
+        "year2":ymd.year2, "month2": ymd.month2, "day2":ymd.day2}, tbl_shift_refresh_callback);
 
     }); 
 
