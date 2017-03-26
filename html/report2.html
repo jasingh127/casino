@@ -33,24 +33,10 @@
       /***************************************************************************
       // Global variables to store persistent state
       ****************************************************************************/
-      var report_data = { 
-        start_date: null,
-        end_date: null
-      };
-
+      var start_date = null;
+      var end_date = null;
       var WEEK_NUM_DAYS = 6;  // 6 because start and end day of week are included
 
-      // Helper function
-      var ymd_from_report_data = function() {
-        var year1 = report_data.start_date.getFullYear();
-        var month1 = report_data.start_date.getMonth();
-        var day1 = report_data.start_date.getDate();
-
-        var year2 = report_data.end_date.getFullYear();
-        var month2 = report_data.end_date.getMonth();
-        var day2 = report_data.end_date.getDate();
-        return {year1:year1, month1:month1, day1:day1, year2:year2, month2:month2, day2:day2}
-      }
     </script>
 
     <script>
@@ -108,17 +94,18 @@
           }
         }
 
-        var ymd = ymd_from_report_data();
+        var ymd = MiscUtil.ymd_from_dates(start_date, end_date);
         DbUtil.fetchReport2Data({"year1":ymd.year1, "month1": ymd.month1, "day1":ymd.day1, 
           "year2":ymd.year2, "month2": ymd.month2, "day2":ymd.day2}, tbl_shift_callback);
       };
 
-      $( function() { 
+      $( function() {
         start_date_callback = function(date) {
-          report_data.start_date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-          report_data.end_date.setDate(report_data.start_date.getDate() + WEEK_NUM_DAYS);
-          $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
-          $("#end_date").val(MiscUtil.date_to_str(report_data.end_date));
+          start_date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+          end_date = new Date(start_date);
+          end_date.setDate(start_date.getDate() + WEEK_NUM_DAYS);
+          $("#start_date").val(MiscUtil.date_to_str(start_date)); 
+          $("#end_date").val(MiscUtil.date_to_str(end_date));
           common_tbl_refresh_helper();
         };
 
@@ -127,15 +114,16 @@
 
       $( function() { 
         end_date_callback = function(date) {
-          report_data.end_date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-          report_data.start_date.setDate(report_data.end_date.getDate() - WEEK_NUM_DAYS);
-          $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
-          $("#end_date").val(MiscUtil.date_to_str(report_data.end_date)); 
+          end_date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+          start_date = new Date(end_date);
+          start_date.setDate(end_date.getDate() - WEEK_NUM_DAYS);
+          $("#start_date").val(MiscUtil.date_to_str(start_date)); 
+          $("#end_date").val(MiscUtil.date_to_str(end_date)); 
           common_tbl_refresh_helper();
         };
 
         MiscUtil.date_picker_helper("#end_date", end_date_callback); 
-      });    
+      });
     </script>
 
 </head>
@@ -190,11 +178,11 @@
       var week_ago = new Date();
       week_ago.setDate(today.getDate() - WEEK_NUM_DAYS);
       
-      report_data.start_date = week_ago;
-      report_data.end_date = today;
+      start_date = week_ago;
+      end_date = today;
 
-      $("#start_date").val(MiscUtil.date_to_str(report_data.start_date)); 
-      $("#end_date").val(MiscUtil.date_to_str(report_data.end_date)); 
+      $("#start_date").val(MiscUtil.date_to_str(start_date)); 
+      $("#end_date").val(MiscUtil.date_to_str(end_date)); 
 
       /***************************************************************************
       // Show weekly numbers only report

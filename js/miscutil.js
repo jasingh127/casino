@@ -42,6 +42,17 @@
     return hours + ":" + ('0' + mins).slice(-2) + "AM" 
   },
 
+  ymd_from_dates: function(start_date, end_date) {
+    var year1 = start_date.getFullYear();
+    var month1 = start_date.getMonth();
+    var day1 = start_date.getDate();
+
+    var year2 = end_date.getFullYear();
+    var month2 = end_date.getMonth();
+    var day2 = end_date.getDate();
+    return {year1:year1, month1:month1, day1:day1, year2:year2, month2:month2, day2:day2}
+  },
+
   date_picker_helper: function(element_id, on_select_callback) {
     $(element_id).datepicker({
       dateFormat: "DD, d MM, yy",
