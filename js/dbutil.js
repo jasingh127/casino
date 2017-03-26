@@ -126,6 +126,16 @@ var DbUtil = {
       });
   },
 
+  // Fetch data for report4
+  fetchReport4Data: function (params, callback) {
+    $.post(MiscUtil.db_server_address + "/fetchWeeklyGameHours", 
+      params,
+      function(data, status){
+        var plot_data = data["result"].game_dict;
+        callback(plot_data);
+      });
+  },
+
   fetchGames: function (callback) {
     $.get(MiscUtil.db_server_address + "/fetchGames", 
       function(data, status){

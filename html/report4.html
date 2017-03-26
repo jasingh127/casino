@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <head>
-    <title> Report1 </title>
+    <title> Report4 </title>
     <link rel="stylesheet" href="../css/third_party/bootstrap.min.css">
     <link rel="stylesheet" href="../css/third_party/bootstrap-theme.min.css">
     <link rel="stylesheet" href="../css/third_party/jquery-ui.css">
@@ -32,15 +32,23 @@
     <script>
       var common_tbl_refresh_helper = function() {
         var tbl_shift_refresh_callback = function(plot_data) {
-          chart.series[0].update({data: plot_data.g_avg});
-          chart.series[1].update({data: plot_data.d_avg});
-          chart.series[2].update({data: plot_data.s_avg});
+          // lets first make sure the chart has no series
+          while(chart.series.length > 0) {
+            chart.series[0].remove(true);
+          }
+          // then add the new series
+          // note that we need this because the set of games with hours > 0 might be different for each week
+          for (var key in plot_data) {
+            if (plot_data.hasOwnProperty(key)) {
+              chart.addSeries({name:key, data:plot_data[key]});
+            }
+          }
           var week_str = MiscUtil.date_to_str(start_date) + ' - ' + MiscUtil.date_to_str(end_date);
           chart.subtitle.update({text: week_str});
         }
       
         var ymd = MiscUtil.ymd_from_dates(start_date, end_date);
-        DbUtil.fetchReport1Data({"year1":ymd.year1, "month1": ymd.month1, "day1":ymd.day1, 
+        DbUtil.fetchReport4Data({"year1":ymd.year1, "month1": ymd.month1, "day1":ymd.day1, 
           "year2":ymd.year2, "month2": ymd.month2, "day2":ymd.day2}, tbl_shift_refresh_callback);        
       };
 
@@ -106,7 +114,7 @@
           type: 'column'
         },
         title: {
-          text: 'Weekly Average Report - One Week - Bar Chart'
+          text: 'Day of the Week Game Bar Chart Comparison'
         },
         subtitle: {
           text: 'Start - End'
@@ -118,7 +126,7 @@
         yAxis: {
           min: 0,
           title: { 
-            text: 'Avg # Tables'
+            text: 'Total Hours'
           }
         },
         tooltip: {
@@ -135,33 +143,29 @@
             borderWidth: 0
           }
         },
-        series: [
-        {
-          name: 'Graveyard Shift 2 AM - 10 AM',
-          data: []
-        },
-        {
-          name: 'Day Shift 10 AM - 6 PM',
-          data: []
-        },
-        {
-          name: 'Swing Shift 6 PM - 2 AM',
-          data: []
-        }]
+        series: []
       });
       /***************************************************************************
       // Fetch weekly table hours per shift report and show
       ****************************************************************************/
       var tbl_shift_refresh_callback = function(plot_data) {
-        chart.series[0].update({data: plot_data.g_avg});
-        chart.series[1].update({data: plot_data.d_avg});
-        chart.series[2].update({data: plot_data.s_avg});
+        // lets first make sure the chart has no series
+        while(chart.series.length > 0) {
+          chart.series[0].remove(true);
+        }
+        // then add the new series
+        // note that we need this because the set of games with hours > 0 might be different for each week
+        for (var key in plot_data) {
+          if (plot_data.hasOwnProperty(key)) {
+            chart.addSeries({name:key, data:plot_data[key]});
+          }
+        }
         var week_str = MiscUtil.date_to_str(start_date) + ' - ' + MiscUtil.date_to_str(end_date);
         chart.subtitle.update({text: week_str});
       }
 
       var ymd = MiscUtil.ymd_from_dates(start_date, end_date);
-      DbUtil.fetchReport1Data({"year1":ymd.year1, "month1": ymd.month1, "day1":ymd.day1, 
+      DbUtil.fetchReport4Data({"year1":ymd.year1, "month1": ymd.month1, "day1":ymd.day1, 
         "year2":ymd.year2, "month2": ymd.month2, "day2":ymd.day2}, tbl_shift_refresh_callback);
 
     }); 

@@ -277,6 +277,41 @@ exports.fetchWeeklyTableHoursSplit = function(req, res){
   );
 };
 
+exports.fetchWeeklyGameHours = function(req, res){
+  // console.log(req.body)
+  var year1 = Number(req.body.year1)
+  var month1 = Number(req.body.month1)
+  var day1 = Number(req.body.day1)
+
+  var year2 = Number(req.body.year2)
+  var month2 = Number(req.body.month2)
+  var day2 = Number(req.body.day2)
+
+  var time1 = new Date(year1, month1, day1).getTime();
+  var time2 = new Date(year2, month2, day2).getTime() + exports.MILLISEC_PER_DAY - 1; // we want day2 all times inclusive
+
+  db.all("SELECT * FROM OCCUPANCY INNER JOIN GAMES ON OCCUPANCY.game_id = GAMES.game_id \
+    WHERE time BETWEEN ? AND ? \
+    AND OCCUPANCY.game_id > 0 ", time1, time2,
+    function (err, rows) {
+      var game_dict = {};  // indexed by game_id
+      for (var i = 0; i < rows.length; i++) {
+        var key = rows[i]["game_desc"];
+        var dow = rows[i]["dow"];
+
+        if (!game_dict.hasOwnProperty(key)) {
+          game_dict[key] = [0, 0, 0, 0, 0, 0, 0]; // 7 days of week (dow)
+        }
+        else {
+          game_dict[key][dow] += 1.0/exports.CHUNKS_PER_HOUR;
+        }
+      }
+      var result = {game_dict: game_dict};
+      res.json({"result":result});
+    }
+  );
+};
+
 // Fetch log data for a single day
 exports.fetchLogs = function(req, res){
   // console.log(req.body)
