@@ -135,6 +135,22 @@
             borderWidth: 0
           }
         },
+        navigation: {
+          buttonOptions: {
+            theme: {
+              style: {
+                textDecoration: 'underline'
+              }
+            }
+          }
+        },
+        exporting: {
+          buttons: {
+            contextButton: {enabled: false},
+            printButton: {text: 'Print', onclick: function() {this.print();}},
+            exportButton: {text: 'Download', menuItems: Highcharts.getOptions().exporting.buttons.contextButton.menuItems.splice(2)}
+          }
+        },
         series: [
         {
           name: 'Graveyard Shift 2 AM - 10 AM',
