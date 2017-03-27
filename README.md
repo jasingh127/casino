@@ -1,6 +1,6 @@
-===============================================================
+--------------
 Instructions:
-===============================================================
+--------------
 After downloading, first install node.js on your machine. 
 
 Then go to the folder with app.js file and type:
@@ -9,9 +9,10 @@ npm install
 
 node app.js
 
-===============================================================
+-------------
 Architecture:
-===============================================================
+-------------
+
 Front End: 
 
 - everything in html/js/css folder
