@@ -19,8 +19,8 @@ var cutoff_date_str = '2010-01-01 00:00:00';
 // Copy all entries after cutoff_date_str from the legacy DB to the new db
 populateDb(cutoff_date_str);
 
-// We are done at this point.
-console.log("Populated DB")
+// We are done when this program ends.
+console.log("Populating DB....")
 
 /***************************************************************************
 // Helper Functions Below This
@@ -158,7 +158,9 @@ function insertLegacyOccupancyData(start_date_str) {
 
           var day_chunk = j;
           var dow = date.getDay();
-          var time = date.getTime() + day_chunk * exports.MINS_PER_DAY_CHUNK * exports.MILLISEC_PER_MIN;
+          var MINS_PER_DAY_CHUNK = 30;
+          var MILLISEC_PER_MIN = 60000;
+          var time = date.getTime() + day_chunk * MINS_PER_DAY_CHUNK * MILLISEC_PER_MIN;
 
           var stmt = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
           stmt.run(table_id, game_id, year, month, day, day_chunk, dow, time);
