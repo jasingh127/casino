@@ -5,8 +5,8 @@
 ***************************************************************************/
 var express = require('express');
 var routes = require('./routes');
-var path = require('path');
-var sqlite = require('sqlite3').verbose();
+path = require('path'); // global path variable
+sqlite = require('sqlite3').verbose(); // global sqlite variable
 fs = require('fs'); // global fs variable
 var winston = require('winston')
 require('winston-daily-rotate-file');
@@ -88,7 +88,6 @@ app.get('/report2', routes.report2);
 app.get('/report3', routes.report3);
 app.get('/report4', routes.report4);
 app.get('/logs', routes.logs);
-app.get('/refreshDb', routes.refreshDb);
 app.get('/fetchGames', routes.fetchGames)
 app.get('/fetchTables', routes.fetchTables)
 app.post('/fetchOccupancy', routes.fetchOccupancy);

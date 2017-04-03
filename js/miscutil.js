@@ -4,7 +4,7 @@
   Misc Utility constants and methods
   **/
   
-  db_server_address: "http://10.0.0.97:3000",
+  db_server_address: "http://172.20.10.2:3000",
 
   array_bounds: function(data) {
     x_start = [];

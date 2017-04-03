@@ -27,6 +27,9 @@ var DbUtil = {
     $.post(MiscUtil.db_server_address + "/fetchOccupancy", 
       params,
       function(data, status){
+        if (data === undefined) {
+          console.log("No Occupancy Data");
+        }
         var plot_data = [];
         for (var i=0; i < data["rows"].length; i++) {
           var row = data["rows"][i];
@@ -139,6 +142,10 @@ var DbUtil = {
   fetchGames: function (callback) {
     $.get(MiscUtil.db_server_address + "/fetchGames", 
       function(data, status){
+        if (data["rows"] === undefined) {
+          console.log("No Game Data");
+          return;
+        }     
         var game_data = [];
         for (var i=0; i < data["rows"].length; i++) {
           var row = data["rows"][i];
