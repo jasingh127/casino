@@ -33,17 +33,21 @@ var DbUtil = {
         var plot_data = [];
         for (var i=0; i < data["rows"].length; i++) {
           var row = data["rows"][i];
+          var row_date = new Date(row["time"]);
+          var row_year = row_date.getFullYear();
+          var row_month = row_date.getMonth();
+          var row_day = row_date.getDate();
           var record = {
-            x:          new Date(row["year"], row["month"], row["day"], row["start_hour"], row["start_mins"]),
-            x2:         new Date(row["year"], row["month"], row["day"], row["end_hour"], row["end_mins"]),
+            x:          new Date(row_year, row_month, row_day, row["start_hour"], row["start_mins"]),
+            x2:         new Date(row_year, row_month, row_day, row["end_hour"], row["end_mins"]),
             y:          row["table_desc"],
             val:        row["game_id"],
 
             // Additional params kept just for reuse convenience when sending back db update messages
 
-            year:       row["year"],
-            month:      row["month"],
-            day:        row["day"],
+            year:       row_year,
+            month:      row_month,
+            day:        row_day,
             start_hour: row["start_hour"],
             start_mins: row["start_mins"],
             end_hour:   row["end_hour"],

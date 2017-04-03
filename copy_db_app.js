@@ -14,6 +14,11 @@ var N_TABLES = 11;
 var GAME_DESCS = ["Empty", "21BJ", "DHP", "BAC", "POKER", "3CP", "PGT"]
 var N_GAMES = GAME_DESCS.length - 1;
 
+// Some other variables
+var N_DAY_CHUNKS = 48;
+var MINS_PER_DAY_CHUNK = 30;
+var MILLISEC_PER_MIN = 60000;
+
 var cutoff_date_str = '2010-01-01 00:00:00';
 
 // Copy all entries after cutoff_date_str from the legacy DB to the new db
@@ -37,9 +42,6 @@ function createDbTables() {
   // Occupancy table
   var query = "CREATE TABLE IF NOT EXISTS OCCUPANCY (table_id INTEGER, \
                                                      game_id INTEGER, \
-                                                     year INTEGER, \
-                                                     month INTEGER, \
-                                                     day INTEGER, \
                                                      day_chunk INTEGER, \
                                                      dow INTEGER, \
                                                      time INTEGER)";
@@ -56,10 +58,6 @@ function createDbTables() {
   // ================================================================================
   // Add table and game data
   // ================================================================================
-
-  var N_TABLES = 11;
-  var GAME_DESCS = ["Empty", "21BJ", "DHP", "BAC", "POKER", "3CP", "PGT"]
-  var N_GAMES = GAME_DESCS.length - 1;
   
   // Delete existing data
   db.run("DELETE FROM OCCUPANCY");
@@ -79,37 +77,56 @@ function createDbTables() {
 
 };
 
+function day_chunk_to_hour_min(chunk) {
+  var start_hour = Math.floor(chunk * 24/N_DAY_CHUNKS);
+  var end_hour = Math.floor((chunk + 1) * 24/N_DAY_CHUNKS);
+  var start_mins = chunk * MINS_PER_DAY_CHUNK - start_hour * 60;
+  var end_mins = (chunk + 1) * MINS_PER_DAY_CHUNK - end_hour * 60; // TODO: Check day wrap-around
+  return {start_hour: start_hour, start_mins: start_mins, end_hour: end_hour, end_mins: end_mins};
+}
+
+function hour_min_to_day_chunk(hour, mins) {
+  var tot_mins = 60 * hour + mins;
+  return Math.floor(tot_mins/MINS_PER_DAY_CHUNK);
+}
+
+function random_int(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+} 
+
 function insertDummyOccupancyData() {
   // ================================================================================
   // Insert dummy occupancy data for each day in the duration below
   // ================================================================================
   var start_date = new Date(2017, 1, 20);  
   var now = new Date();
-  var now_day_chunk = exports.hour_min_to_day_chunk(now.getHours(), now.getMinutes());
+  var now_day_chunk = hour_min_to_day_chunk(now.getHours(), now.getMinutes());
   var game_id = 0;
   var PERSISTENCE_PROB = 0.7;
   var EMPTY_PROB = 0.4;
   var itrs = 0;
   for (var d = start_date; d <= now; d.setDate(d.getDate() + 1)) {
     for (var table_id = 1; table_id <= N_TABLES; table_id++)
-      for (var day_chunk = 0; day_chunk < exports.N_DAY_CHUNKS; day_chunk++) {
-        if ((d.toDateString() === now.toDateString()) && (day_chunk > now_day_chunk)) 
+      for (var day_chunk = 0; day_chunk < N_DAY_CHUNKS; day_chunk++) {
+        if ((d.toDateString() === now.toDateString()) && (day_chunk > now_day_chunk)) {
           break;
-        if (Math.random() < PERSISTENCE_PROB)
+        }
+        if (Math.random() < PERSISTENCE_PROB) {
           game_id = game_id; // do nothing
-        else
-          if (Math.random() < EMPTY_PROB)
+        }
+        else {
+          if (Math.random() < EMPTY_PROB) {
             game_id = 0;
-          else
-            game_id = exports.random_int(1, N_GAMES)
+          }
+          else {
+            game_id = random_int(1, N_GAMES)
+          }
+        }
 
-        var year = d.getFullYear();
-        var month = d.getMonth();
-        var day = d.getDate();
         var dow = d.getDay();
-        var time = d.getTime() + day_chunk * exports.MINS_PER_DAY_CHUNK * exports.MILLISEC_PER_MIN;
-        var stmt = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        stmt.run(table_id, game_id, year, month, day, day_chunk, dow, time);
+        var time = d.getTime() + day_chunk * MINS_PER_DAY_CHUNK * MILLISEC_PER_MIN;
+        var stmt = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?)");
+        stmt.run(table_id, game_id, day_chunk, dow, time);
         itrs++;
       }
   }  
@@ -158,12 +175,10 @@ function insertLegacyOccupancyData(start_date_str) {
 
           var day_chunk = j;
           var dow = date.getDay();
-          var MINS_PER_DAY_CHUNK = 30;
-          var MILLISEC_PER_MIN = 60000;
           var time = date.getTime() + day_chunk * MINS_PER_DAY_CHUNK * MILLISEC_PER_MIN;
 
-          var stmt = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-          stmt.run(table_id, game_id, year, month, day, day_chunk, dow, time);
+          var stmt = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?)");
+          stmt.run(table_id, game_id, day_chunk, dow, time);
         }
     });
   }
@@ -188,7 +203,7 @@ function populateDb(cutoff_date_str) {
     db.exec("COMMIT")
 
     // Create a unique index on Occupancy Data to make queries faster
-    var query = "CREATE UNIQUE INDEX occupancy_index ON OCCUPANCY(table_id, year, month, day, day_chunk, dow, time)"
+    var query = "CREATE UNIQUE INDEX occupancy_index ON OCCUPANCY(table_id, day_chunk, dow, time)"
     db.run(query)
 
   });

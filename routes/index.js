@@ -53,8 +53,8 @@ exports.insertOccupancy = function(req, res){
   var d = new Date(year, month, day, start_hour, start_mins);
   var dow = d.getDay();
   var time = d.getTime();
-  var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-  query.run(table_id, game_id, year, month, day, day_chunk, dow, time);
+  var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?)")
+  query.run(table_id, game_id, day_chunk, dow, time);
   logger.info('Added game = ' + game_id + ' in Table ' + table_id + " at " + [year, month, day, day_chunk, dow]);
   res.json({status: "pass"}) // TODO: Modify this to indicate status of query
 };
@@ -83,11 +83,13 @@ exports.fetchOccupancy = function(req, res){
   var year = Number(req.body.year)
   var month = Number(req.body.month)
   var day = Number(req.body.day)
+  var time1 = new Date(year, month, day).getTime();
+  var time2 = new Date(year, month, day).getTime() + exports.MILLISEC_PER_DAY - 1;
 
   // call back function used below
-  var fetch_available_occupancy = function(year, month, day, table_daychunk_index) {
+  var fetch_available_occupancy = function(time1, time2, table_daychunk_index) {
     db.all("SELECT * FROM OCCUPANCY INNER JOIN TABLES ON OCCUPANCY.table_id = TABLES.table_id \
-      WHERE year = ? AND month = ? AND day = ?", year, month, day, 
+      WHERE time BETWEEN ? AND ?", time1, time2, 
       function (err, rows) {
         // add hour, mins field as well for convenience
         for (var i = 0; i < rows.length; i++) {
@@ -119,9 +121,6 @@ exports.fetchOccupancy = function(req, res){
           record["table_id"] = rows[i]["table_id"];
           record["table_desc"] = rows[i]["table_desc"];
           record["game_id"] = exports.BLANK_GAME_ID;  // BLANK ENTRY
-          record["year"] = year;
-          record["month"] = month;
-          record["day"] = day;
           record["day_chunk"] = j;
           record["dow"] = new Date(year, month, day).getDay();
           var hour_mins = exports.day_chunk_to_hour_min(record["day_chunk"]);
@@ -129,12 +128,13 @@ exports.fetchOccupancy = function(req, res){
           record["start_mins"] = hour_mins.start_mins;
           record["end_hour"] = hour_mins.end_hour;
           record["end_mins"] = hour_mins.end_mins;
+          record["time"] = new Date(year, month, day, hour_mins.start_hour, hour_mins.start_mins).getTime();
           var key = record["table_id"] + ":" + record["day_chunk"];
           table_daychunk_index[key] = record;
         }
 
       // Overwrite with available occupancy data and return
-      fetch_available_occupancy(year, month, day, table_daychunk_index);
+      fetch_available_occupancy(time1, time2, table_daychunk_index);
     }
   );
 };
@@ -432,6 +432,8 @@ exports.update_occupancy = function() {
   var month1 = now.getMonth();
   var day1 = now.getDate();
   var day_chunk1 = exports.hour_min_to_day_chunk(now.getHours(), now.getMinutes());
+  var hm1 = exports.day_chunk_to_hour_min(day_chunk1);
+  var t1 = new Date(year1, month1, day1, hm1.start_hour, hm1.start_mins);
 
   // Get a list of tables
   db.all("SELECT * FROM TABLES", 
@@ -450,17 +452,10 @@ exports.update_occupancy = function() {
           // Note that in the above SELECT statement, we are getting back max 5 records, but actuallly just 2 are sufficient.
           // This is because we don't allow the user to modify any records more than one day chunk away in future. 
           for (var j = 0; j < rows.length; j++) {
-            var year2 = rows[j]["year"];
-            var month2 = rows[j]["month"];
-            var day2 = rows[j]["day"];
-            var day_chunk2 = rows[j]["day_chunk"];
             var game_id = rows[j]["game_id"];
+            var day_chunk2 = rows[j]["day_chunk"];
+            var t2 = new Date(rows[j]["time"]);
 
-            var hm1 = exports.day_chunk_to_hour_min(day_chunk1);
-            var t1 = new Date(year1, month1, day1, hm1.start_hour, hm1.start_mins);
-            var hm2 = exports.day_chunk_to_hour_min(day_chunk2);
-            var t2 = new Date(year2, month2, day2, hm2.start_hour, hm2.start_mins);
-            
             if (t2.getTime() > t1.getTime())   // ignoring any future filled chunks
               continue;
 
@@ -470,14 +465,11 @@ exports.update_occupancy = function() {
             // last filled chunk before current chunk, copy this till (including) current chunk
             while (t2.getTime() < t1.getTime()) {
               t2 = new Date(t2.getTime() + exports.MINS_PER_DAY_CHUNK * exports.MILLISEC_PER_MIN); // advance by 1 chunk
-              year2 = t2.getFullYear();
-              month2 = t2.getMonth();
-              day2 = t2.getDate();
               day_chunk2 = exports.hour_min_to_day_chunk(t2.getHours(), t2.getMinutes());
               var dow2 = t2.getDay();
               var time2 = t2.getTime();
-              var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-              query.run(rows[j]["table_id"], game_id, year2, month2, day2, day_chunk2, dow2, time2);
+              var query = db.prepare("REPLACE INTO OCCUPANCY VALUES (?, ?, ?, ?, ?)");
+              query.run(rows[j]["table_id"], game_id, day_chunk2, dow2, time2);
               logger.info("t2: " + t2 + ", t1: " + t1);
               logger.info("Copying game = " + game_id + " for table " + rows[j]["table_id"]);
             }
