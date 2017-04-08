@@ -25,6 +25,7 @@
     <script type="text/javascript" src="../js/third_party/pdfmake.min.js"></script>
     <script type="text/javascript" src="../js/third_party/vfs_fonts.js"></script>
     <script type="text/javascript" src="../js/third_party/buttons.html5.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/buttons.colVis.min.js"></script>
 
     <script type="text/javascript" src="../js/miscutil.js"></script>
     <script type="text/javascript" src="../js/dbutil.js"></script>
@@ -35,7 +36,7 @@
       ****************************************************************************/
       var start_date = null;
       var end_date = null;
-      var WEEK_NUM_DAYS = 6;  // 6 because start and end day of week are included
+      var WEEK_NUM_DAYS = 6;  // end_day-start_day = 6, range is [start_day, end_day] inclusive
 
     </script>
 
@@ -53,35 +54,37 @@
               columns: [
                   {title: "Day" },
 
-                  { title: "Avg" },
-                  { title: "Tot" },
+                  { title: "Graveyard Avg" },
+                  { title: "Graveyard Tot" },
 
-                  { title: "Avg" },
-                  { title: "Tot" },
+                  { title: "Day Shift Avg" },
+                  { title: "Day Shift Tot" },
 
-                  { title: "Avg" },
-                  { title: "Tot" },
+                  { title: "Swing Shift Avg" },
+                  { title: "Swing Shift Tot" },
 
-                  { title: "Avg" },
-                  { title: "Tot" }
+                  { title: "Daily Avg" },
+                  { title: "Daily Tot" }
               ],
               dom: 'Bfrtip',
               buttons: [
                   {
                     extend: 'pdfHtml5',
+                    text: '<i class="fa fa-print"></i> Print',
                     download: 'open', 
-                    orientation: 'portrait',
-                    header: true,
-                    title: 'Weekly Numbers Only For One Week',
+                    orientation: 'landscape',
+                    title: function() {
+                      var week_str = MiscUtil.date_to_str(start_date) + ' - ' + MiscUtil.date_to_str(end_date);
+                      return 'Weekly Numbers Only For One Week (' + week_str + ')';
+                    },
                     customize: function(doc) {
-                      doc.styles.tableHeader.fontSize = 11;
-                      doc.defaultStyle.fontSize = 16;
+                      doc.styles.tableHeader.fontSize = 6;
+                      doc.defaultStyle.fontSize = 6;
                     }                    
                   },
                   {
-                    extend: 'print',
-                    text: '<i class="fa fa-print"></i> Print',
-                    autoPrint: true
+                    extend: 'colvis',
+                    text: '<i class="fa fa-print"></i> Hide Cols'
                   }
               ]              
             });
@@ -141,13 +144,6 @@
     <center> 
     <table id="weekly_numbers" class="cell-border display" width="100%">
         <thead>
-            <tr>
-                <th colspan="1"></th>
-                <th colspan="2">Graveyard</th>
-                <th colspan="2">Day Shift</th>
-                <th colspan="2">Swing Shift</th>
-                <th colspan="2">Daily Total</th>
-            </tr>
             <tr>
                 <th></th>
 

@@ -104,6 +104,29 @@ var DbUtil = {
           ]
           tbl_data.push(record);
         }
+
+        // push weekly totals too
+        var week_g_tot = 0;
+        var week_d_tot = 0;
+        var week_s_tot = 0;
+        for (var i=0; i < DAYS_IN_WEEK; i++) {
+          week_g_tot += g_tot[i];
+          week_d_tot += d_tot[i];
+          week_s_tot += s_tot[i];
+        }
+        var record = [
+          "{all}",
+          "",
+          week_g_tot.toFixed(1),
+          "",
+          week_d_tot.toFixed(1),
+          "",
+          week_s_tot.toFixed(1),
+          "",
+          (week_g_tot + week_d_tot + week_s_tot).toFixed(1)
+        ]
+        tbl_data.push(record);
+
         callback(tbl_data);
       });
   },
@@ -113,15 +136,16 @@ var DbUtil = {
     $.post(MiscUtil.db_server_address + "/fetchWeeklyTableHoursSplit", 
       params,
       function(data, status){
+        var DAYS_IN_WEEK = 7;
+        var DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
         var tbl_data = [];
+        // push game hours per table
         for (var key in data["result"].table_game_dict) {
           var record = [key.split(":")[1], key.split(":")[0]]; // game id and table id
-          var DAYS_IN_WEEK = 7;
-          var DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+          var g_tot = data["result"].table_game_dict[key].graveyard_tot_hours;
+          var d_tot = data["result"].table_game_dict[key].day_tot_hours;
+          var s_tot = data["result"].table_game_dict[key].swing_tot_hours;
           for (var i=0; i < DAYS_IN_WEEK; i++) {
-            var g_tot = data["result"].table_game_dict[key].graveyard_tot_hours;
-            var d_tot = data["result"].table_game_dict[key].day_tot_hours;
-            var s_tot = data["result"].table_game_dict[key].swing_tot_hours;
             record.push(g_tot[i] > 0.0 ? g_tot[i].toFixed(1): "");
             record.push(d_tot[i] > 0.0 ? d_tot[i].toFixed(1): "");
             record.push(s_tot[i] > 0.0 ? s_tot[i].toFixed(1): "");
@@ -129,6 +153,43 @@ var DbUtil = {
           }
           tbl_data.push(record);
         }
+
+        // push total game hours
+        for (var key in data["result"].game_dict) {
+          var record = [key, "{all}"]; // game id, blank_space
+          var g_tot = data["result"].game_dict[key].graveyard_tot_hours;
+          var d_tot = data["result"].game_dict[key].day_tot_hours;
+          var s_tot = data["result"].game_dict[key].swing_tot_hours;
+          for (var i=0; i < DAYS_IN_WEEK; i++) {
+            record.push(g_tot[i] > 0.0 ? g_tot[i].toFixed(1): "");
+            record.push(d_tot[i] > 0.0 ? d_tot[i].toFixed(1): "");
+            record.push(s_tot[i] > 0.0 ? s_tot[i].toFixed(1): "");
+            record.push((g_tot[i] + d_tot[i] + s_tot[i]) > 0.0 ? (g_tot[i] + d_tot[i] + s_tot[i]).toFixed(1): "");
+          }
+          tbl_data.push(record);
+        }
+
+        // calculate and push total hours
+        var record = ["{all}", "{all}"];
+        for (var i=0; i < DAYS_IN_WEEK; i++) {
+          var g_tot_sum = 0;
+          var d_tot_sum = 0;
+          var s_tot_sum = 0;
+          for (var key in data["result"].game_dict) {
+            var g_tot = data["result"].game_dict[key].graveyard_tot_hours;
+            var d_tot = data["result"].game_dict[key].day_tot_hours;
+            var s_tot = data["result"].game_dict[key].swing_tot_hours;
+            g_tot_sum += g_tot[i];
+            d_tot_sum += d_tot[i];
+            s_tot_sum += s_tot[i];
+          }
+          record.push(g_tot_sum > 0.0 ? g_tot_sum.toFixed(1): "")
+          record.push(d_tot_sum > 0.0 ? d_tot_sum.toFixed(1): "")
+          record.push(s_tot_sum > 0.0 ? s_tot_sum.toFixed(1): "")
+          record.push((g_tot_sum + d_tot_sum + s_tot_sum) > 0.0 ? (g_tot_sum + d_tot_sum + s_tot_sum).toFixed(1): "")
+        }
+        tbl_data.push(record);
+
         callback(tbl_data);
       });
   },

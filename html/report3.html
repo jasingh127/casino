@@ -25,6 +25,7 @@
     <script type="text/javascript" src="../js/third_party/pdfmake.min.js"></script>
     <script type="text/javascript" src="../js/third_party/vfs_fonts.js"></script>
     <script type="text/javascript" src="../js/third_party/buttons.html5.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/buttons.colVis.min.js"></script>
 
     <script type="text/javascript" src="../js/miscutil.js"></script>
     <script type="text/javascript" src="../js/dbutil.js"></script>
@@ -35,7 +36,7 @@
       ****************************************************************************/
       var start_date = null;
       var end_date = null;
-      var WEEK_NUM_DAYS = 6;  // 6 because start and end day of week are included
+      var WEEK_NUM_DAYS = 6;  // end_day-start_day = 6, range is [start_day, end_day] inclusive
 
     </script>
 
@@ -53,61 +54,62 @@
                   {title: "Game Type"},
                   {title: "Table #"}, 
 
-                  { title: "Grave" },
-                  { title: "Day" },
-                  { title: "Swg" },
-                  { title: "Tot" },
+                  { title: "Sun Grave" },
+                  { title: "Sun Day" },
+                  { title: "Sun Swg" },
+                  { title: "Sun Tot" },
 
-                  { title: "Grave" },
-                  { title: "Day" },
-                  { title: "Swg" },
-                  { title: "Tot" },
+                  { title: "Mon Grave" },
+                  { title: "Mon Day" },
+                  { title: "Mon Swg" },
+                  { title: "Mon Tot" },
 
-                  { title: "Grave" },
-                  { title: "Day" },
-                  { title: "Swg" },
-                  { title: "Tot" },
+                  { title: "Tue Grave" },
+                  { title: "Tue Day" },
+                  { title: "Tue Swg" },
+                  { title: "Tue Tot" },
 
-                  { title: "Grave" },
-                  { title: "Day" },
-                  { title: "Swg" },
-                  { title: "Tot" },
+                  { title: "Wed Grave" },
+                  { title: "Wed Day" },
+                  { title: "Wed Swg" },
+                  { title: "Wed Tot" },
 
-                  { title: "Grave" },
-                  { title: "Day" },
-                  { title: "Swg" },
-                  { title: "Tot" },
+                  { title: "Thu Grave" },
+                  { title: "Thu Day" },
+                  { title: "Thu Swg" },
+                  { title: "Thu Tot" },
 
-                  { title: "Grave" },
-                  { title: "Day" },
-                  { title: "Swg" },
-                  { title: "Tot" },
+                  { title: "Fri Grave" },
+                  { title: "Fri Day" },
+                  { title: "Fri Swg" },
+                  { title: "Fri Tot" },
 
-                  { title: "Grave" },
-                  { title: "Day" },
-                  { title: "Swg" },
-                  { title: "Tot" },
+                  { title: "Sat Grave" },
+                  { title: "Sat Day" },
+                  { title: "Sat Swg" },
+                  { title: "Sat Tot" },
               ],
               dom: 'Bfrtip',
               buttons: [
                   {
                     extend: 'pdfHtml5',
+                    text: '<i class="fa fa-print"></i> Print',
                     download: 'open', 
                     orientation: 'landscape',
-                    header: true,
-                    title: 'Weekly Spreadsheet Report',
+                    title: function() {
+                      var week_str = MiscUtil.date_to_str(start_date) + ' - ' + MiscUtil.date_to_str(end_date);
+                      return 'Weekly Numbers Only For One Week (' + week_str + ')';
+                    },
                     customize: function(doc) {
-                      console.log(doc.content)
-                      doc.styles.tableHeader.fontSize = 8;
+                      doc.styles.tableHeader.fontSize = 6;
                       doc.defaultStyle.fontSize = 6;
-                    }
+                    }                    
                   },
                   {
-                    extend: 'print',
-                    text: '<i class="fa fa-print"></i> Print',
-                    autoPrint: true
-                  }                  
-              ]
+                    extend: 'colvis',
+                    text: '<i class="fa fa-print"></i> Hide Cols'
+                  }
+              ]                
             }).order( [[ 0, 'asc' ], [ 1, 'asc' ]] ).draw();
           }
           else {
@@ -166,16 +168,6 @@
     <center> 
     <table id="weekly_numbers" class="cell-border display" width="100%">
         <thead>
-            <tr>
-                <th colspan="2"></th>
-                <th colspan="4">Sun</th>
-                <th colspan="4">Mon</th>
-                <th colspan="4">Tue</th>
-                <th colspan="4">Wed</th>
-                <th colspan="4">Thu</th>
-                <th colspan="4">Fri</th>
-                <th colspan="4">Sat</th>
-            </tr>
             <tr>
                 <th></th>
                 <th></th>
