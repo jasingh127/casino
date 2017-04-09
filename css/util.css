@@ -5,3 +5,12 @@
 div {
     white-space: pre-line;
 }
+
+.table { display: table; table-layout:fixed;}
+.row { display: table-row; }
+.cell { display: table-cell; }
+
+.tooltip-inner {
+    white-space:pre;
+    max-width:none;
+}

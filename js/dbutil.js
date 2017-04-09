@@ -222,5 +222,40 @@ var DbUtil = {
         }
         callback(game_data);
       });
+  },
+
+  fetchTablesAsList: function (callback) {
+    $.get(MiscUtil.db_server_address + "/fetchTables", 
+      function(data, status){
+        if (data["rows"] === undefined) {
+          console.log("No Table Data");
+          return;
+        }     
+        var tbl_data = [];
+        for (var i = 0; i < data["rows"].length; i++) {
+          var row = data["rows"][i];
+          var record = [row["table_id"], row["table_desc"]];
+          tbl_data.push(record);
+        }
+        callback(tbl_data);
+      });
+  },
+
+  fetchGamesAsList: function (callback) {
+    $.get(MiscUtil.db_server_address + "/fetchGames", 
+      function(data, status){
+        if (data["rows"] === undefined) {
+          console.log("No Games Data");
+          return;
+        }     
+        var tbl_data = [];
+        for (var i = 0; i < data["rows"].length; i++) {
+          var row = data["rows"][i];
+          var record = [row["game_id"], row["game_desc"]];
+          tbl_data.push(record);
+        }
+        callback(tbl_data);
+      });
   }
+
 }

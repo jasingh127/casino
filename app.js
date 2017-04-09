@@ -87,6 +87,7 @@ app.get('/report1', routes.report1);
 app.get('/report2', routes.report2);
 app.get('/report3', routes.report3);
 app.get('/report4', routes.report4);
+app.get('/admin', routes.admin);
 app.get('/logs', routes.logs);
 app.get('/fetchGames', routes.fetchGames)
 app.get('/fetchTables', routes.fetchTables)

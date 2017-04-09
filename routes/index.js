@@ -32,6 +32,10 @@ exports.report4 = function(req, res){
   res.sendFile('report4.html', {root: __dirname + '/../html'});
 };
 
+exports.admin = function(req, res){
+  res.sendFile('admin.html', {root: __dirname + '/../html'});
+};
+
 exports.logs = function(req, res){
   res.sendFile('logs.html', {root: __dirname + '/../html'});
 };
@@ -444,10 +448,17 @@ exports.update_occupancy = function() {
     }
 
     // For each table_id, let's fill the gaps
+    var MAX_GAP_DAYS = 7; // We only look back this much in time to fill gaps
+    var now = new Date();
+    var TIME_CUTOFF = now.getTime() - MAX_GAP_DAYS * exports.MILLISEC_PER_DAY;
     for (var i = 0; i < rows_tbl.length; i++) {
       var table_id = rows_tbl[i]["table_id"];
-      db.all("SELECT * FROM OCCUPANCY WHERE table_id = ? ORDER BY time DESC LIMIT 5", table_id,
+      db.all("SELECT * FROM OCCUPANCY WHERE table_id = ? AND time > ? ORDER BY time DESC LIMIT 5", table_id, TIME_CUTOFF,
         function (err, rows) {
+          if (rows === undefined) {
+            console.log("No entry for this table within cutoff time");
+            return;
+          }
           // Go through the entries till we find an entry with time <= cur_time, then fill the gap for that table_id
           // Note that in the above SELECT statement, we are getting back max 5 records, but actuallly just 2 are sufficient.
           // This is because we don't allow the user to modify any records more than one day chunk away in future. 

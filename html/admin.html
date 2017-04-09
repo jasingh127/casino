@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+    <title> Admin Console </title>
+    <link rel="stylesheet" href="../css/third_party/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/third_party/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="../css/third_party/jquery.dataTables-1.10.0.css">
+    <link rel="stylesheet" href="../css/third_party/scroller.dataTables.min.css">
+    <link rel="stylesheet" href="../css/third_party/jquery-ui.css">
+    
+    <link rel="stylesheet" href="../css/util.css">
+
+    <script type="text/javascript" src="../js/third_party/jquery-2.2.0.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/d3.v3.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/d3.tip.v0.6.3.js"></script>
+    <script type="text/javascript" src="../js/third_party/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/dataTables.scroller.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/d3-jetpack.js"></script>
+    <script type="text/javascript" src="../js/third_party/gunzip.min.js"></script>
+    <script type="text/javascript" src="../js/third_party/underscore-min.js"></script>
+    <script type="text/javascript" src="../js/third_party/jquery-ui.js"></script>
+
+
+    <script type="text/javascript" src="../js/miscutil.js"></script>
+    <script type="text/javascript" src="../js/dbutil.js"></script>
+</head>
+
+<style>
+input[type=text], select {
+    width: 30%;
+    height: 50px;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+</style>
+
+<body>
+  <center> 
+    <h3> Enter a command to add/edit a table or game
+    <a href="#" data-toggle="tooltip" title='Add a new table:
+    {table_id:12, table_desc:"Table 12"}
+    Add a new game:
+    {game_id:7, game_desc:"ABC"}
+    Edit an existing game:
+    {game_id:4, game_desc:"PKR"}'>(examples)</a>
+    </h3>
+
+    <div>
+      <form>
+        <input type="text" id="command_json" name="command_json" placeholder='{game_id:7, game_desc:"ABC"}'>
+        <input type="submit" value="Submit">
+      </form>  
+    </div>
+  </center>
+
+  <div class="table">
+    <div class="row">
+      
+      <div id="tables_div" class="cell">
+        <center> <h4> Casino Tables </h4> </center>
+        <center> 
+        <table id="casino_tables" class="cell-border display" width="100%">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table> 
+        </center>
+      </div>
+    
+      <div id="games_div" class="cell">
+        <center> <h4> Casino Games </h4> </center>
+        <center> 
+        <table id="casino_games" class="cell-border display" width="100%">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table> 
+        </center>
+      </div>
+
+    </div>
+  </div>
+    
+    
+  <script>
+    $(function() {
+      $('[data-toggle="tooltip"]').tooltip();
+
+      var tables_callback = function(tbl_data) {
+        var casino_tables = $("#casino_tables").DataTable({
+          paging:   false,
+          info:     false,
+          searching:   false,
+          data: tbl_data,
+          columns: [
+              {title: "Id" },
+              { title: "Description" }
+          ],          
+          dom: 'Bfrtip'
+        });
+      }
+
+      DbUtil.fetchTablesAsList(tables_callback)
+
+      var games_callback = function(game_data) {
+        var casino_games = $("#casino_games").DataTable({
+          paging:   false,
+          info:     false,
+          searching:   false,
+          data: game_data,
+          columns: [
+              {title: "Id" },
+              { title: "Description" }
+          ],          
+          dom: 'Bfrtip'
+        });
+      }
+
+      DbUtil.fetchGamesAsList(games_callback)
+
+    }); 
+
+  </script>
+</body>
