@@ -24,6 +24,30 @@
 
     <script type="text/javascript" src="../js/miscutil.js"></script>
     <script type="text/javascript" src="../js/dbutil.js"></script>
+
+    <script>
+      var common_tbl_refresh_helper = function() {
+        var callback1 = function(tbl_data) {
+          var datatable = $('#casino_tables').dataTable().api();
+          datatable.clear();
+          datatable.rows.add(tbl_data);
+          datatable.draw();
+        }
+
+        DbUtil.fetchTablesAsList(callback1);
+
+        var callback2 = function(game_data) {
+          var datatable = $('#casino_games').dataTable().api();
+          datatable.clear();
+          datatable.rows.add(game_data);
+          datatable.draw();
+        }
+
+        DbUtil.fetchGamesAsList(callback2);
+
+      }
+    </script>
+
 </head>
 
 <style>
@@ -42,17 +66,17 @@ input[type=text], select {
 <body>
   <center> 
     <h3> Enter a command to add/edit a table or game
-    <a href="#" data-toggle="tooltip" title='Add a new table:
-    {table_id:12, table_desc:"Table 12"}
-    Add a new game:
-    {game_id:7, game_desc:"ABC"}
-    Edit an existing game:
-    {game_id:4, game_desc:"PKR"}'>(examples)</a>
+    <a href="#" data-toggle="tooltip" title='Add a new table 12:
+    {"table_id":12, "table_desc":"Table 12"}
+    Add a new game 7:
+    {"game_id":7, "game_desc":"ABC"}
+    Edit an existing game 4:
+    {"game_id":4, "game_desc":"PKR"}'>(examples)</a>
     </h3>
 
     <div>
-      <form>
-        <input type="text" id="command_json" name="command_json" placeholder='{game_id:7, game_desc:"ABC"}'>
+      <form id="command_form">
+        <input type="text" id="command_json" name="command_json" placeholder='{"game_id":7, "game_desc":"ABC"}'>
         <input type="submit" value="Submit">
       </form>  
     </div>
@@ -95,8 +119,50 @@ input[type=text], select {
     
   <script>
     $(function() {
+      // Setup tool tip that shows examples
       $('[data-toggle="tooltip"]').tooltip();
 
+      // Setup function to capture form submit
+      function processForm(e) {
+        if (e.preventDefault)
+          e.preventDefault();
+
+        try {
+          var command_str = $('#command_json').val()
+          var command = JSON.parse(command_str);
+
+          // parse command
+          if (Object.keys(command).length != 2) {
+            alert("Bad command: must specify only the id and desc");
+            return false;
+          }
+
+          if (("table_id" in command) && ("table_desc" in command)) {
+            DbUtil.insertTables(command, common_tbl_refresh_helper);
+            return false;
+          }
+
+          if (("game_id" in command) && ("game_desc" in command)) {
+            DbUtil.insertGames(command, common_tbl_refresh_helper);
+            return false;
+          }
+
+        } 
+        catch(e) {
+          alert(e);
+          return false;
+        }
+      }
+
+      var form = document.getElementById('command_form');
+      if (form.attachEvent) {
+          form.attachEvent("submit", processForm);
+      } 
+      else {
+        form.addEventListener("submit", processForm);
+      }
+
+      // Show current values of casino tables and games
       var tables_callback = function(tbl_data) {
         var casino_tables = $("#casino_tables").DataTable({
           paging:   false,

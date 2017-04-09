@@ -97,8 +97,8 @@ app.post('/fetchWeeklyTableHours', routes.fetchWeeklyTableHours);
 app.post('/fetchWeeklyTableHoursSplit', routes.fetchWeeklyTableHoursSplit);
 app.post('/fetchWeeklyGameHours', routes.fetchWeeklyGameHours);
 app.post('/insertOccupancy', routes.insertOccupancy);
-app.post('/insertTables', routes.insertOccupancy);
-app.post('/insertGames', routes.insertOccupancy);
+app.post('/insertTables', routes.insertTables);
+app.post('/insertGames', routes.insertGames);
 app.post('/print', routes.print);
 
 /***************************************************************************

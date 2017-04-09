@@ -10,16 +10,22 @@ var DbUtil = {
       function(data, status){console.log(data);});
   },
 
-  insertTables: function (record) {
+  insertTables: function (record, callback) {
     $.post(MiscUtil.db_server_address + "/insertTables",
       record,
-      function(data, status){console.log(data);});
+      function(data, status){
+        console.log(data);
+        callback();
+      });
   },
 
-  insertGames: function (record) {
+  insertGames: function (record, callback) {
     $.post(MiscUtil.db_server_address + "/insertGames",
       record,
-      function(data, status){console.log(data);});
+      function(data, status){
+        console.log(data);
+        callback();
+      });
   },
 
   // Fetch occupancy table data for a single day

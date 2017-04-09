@@ -48,11 +48,11 @@ function createDbTables() {
   db.run(query)
 
   // Games table
-  var query = "CREATE TABLE IF NOT EXISTS GAMES (game_id INTEGER, game_desc TEXT)"
+  var query = "CREATE TABLE IF NOT EXISTS GAMES (game_id INTEGER PRIMARY KEY, game_desc TEXT)"
   db.run(query)
 
   // Tables table
-  var query = "CREATE TABLE IF NOT EXISTS TABLES (table_id INTEGER, table_desc TEXT)"
+  var query = "CREATE TABLE IF NOT EXISTS TABLES (table_id INTEGER PRIMARY KEY, table_desc TEXT)"
   db.run(query)
 
   // ================================================================================
@@ -167,8 +167,11 @@ function insertLegacyOccupancyData(start_date_str) {
 
         // go through the TIME*AM columns of this record/row
         for (var j = 0; j < TIME_COLS.length; j++) {
-          // Check if the game is valid
+          // Check if the entry is either a valid game or is == "END", in which case, we use "Empty"
           var game_id = GAME_DESCS.indexOf(row[TIME_COLS[j]]);
+          if (row[TIME_COLS[j]] == "END") {
+            game_id = 0;
+          }
           if (game_id < 0) {
             return;
           }
