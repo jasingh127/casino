@@ -190,15 +190,15 @@ exports.fetchWeeklyTableHours = function(req, res){
         var dow = rows[i]["dow"];
         if (chunk >= exports.GRAVEYARD_SHIFT_START && chunk < exports.GRAVEYARD_SHIFT_END) {
           graveyard_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
-          graveyard_avg_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR/exports.GRAVEYARD_SHIFT_TOT_HOURS;
+          graveyard_avg_hours[dow] += 1.0/(exports.CHUNKS_PER_HOUR * exports.GRAVEYARD_SHIFT_TOT_HOURS);
         }
         else if (chunk >= exports.DAY_SHIFT_START && chunk < exports.DAY_SHIFT_END) {
           day_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
-          day_avg_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR/exports.DAY_SHIFT_TOT_HOURS;
+          day_avg_hours[dow] += 1.0/(exports.CHUNKS_PER_HOUR * exports.DAY_SHIFT_TOT_HOURS);
         }
         else if (chunk >= exports.SWING_SHIFT_START || chunk < exports.SWING_SHIFT_END) {   // || because (18, 2)
           swing_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
-          swing_avg_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR/exports.SWING_SHIFT_TOT_HOURS;
+          swing_avg_hours[dow] += 1.0/(exports.CHUNKS_PER_HOUR * exports.SWING_SHIFT_TOT_HOURS);
         }
       }
       var result = {graveyard_tot_hours: graveyard_tot_hours, graveyard_avg_hours: graveyard_avg_hours,
@@ -228,50 +228,48 @@ exports.fetchWeeklyTableHoursSplit = function(req, res){
     function (err, rows) {
       var table_game_dict = {};  // indexed by table_id_game_id
       var game_dict = {};  // indexed by game_id
-      // Count number of hours of table play based on chunks accumulated (populate the two dicts
+      // Count number of hours of table play based on chunks accumulated (populate the two dicts)
       for (var i = 0; i < rows.length; i++) {
         var key1 = rows[i]["table_id"] + ":" + rows[i]["game_desc"];
-        if (!table_game_dict.hasOwnProperty(key1)) {
+        if (!table_game_dict.hasOwnProperty(key1)) { // first appearance of key1, initialize sums
           table_game_dict[key1] = {
             graveyard_tot_hours: [0, 0, 0, 0, 0, 0, 0], // 7 days of week (dow)
             day_tot_hours:       [0, 0, 0, 0, 0, 0, 0], // 7 days of week (dow)
             swing_tot_hours:     [0, 0, 0, 0, 0, 0, 0], // 7 days of week (dow)
           };
         }
-        else {
-          var chunk = rows[i]["day_chunk"];
-          var dow = rows[i]["dow"];
-          if (chunk >= exports.GRAVEYARD_SHIFT_START && chunk < exports.GRAVEYARD_SHIFT_END) {
-            table_game_dict[key1].graveyard_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
-          }
-          else if (chunk >= exports.DAY_SHIFT_START && chunk < exports.DAY_SHIFT_END) {
-            table_game_dict[key1].day_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
-          }
-          else if (chunk >= exports.SWING_SHIFT_START || chunk < exports.SWING_SHIFT_END) {   // || because (18, 2)
-            table_game_dict[key1].swing_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
-          }
+
+        var chunk = rows[i]["day_chunk"];
+        var dow = rows[i]["dow"];
+        if (chunk >= exports.GRAVEYARD_SHIFT_START && chunk < exports.GRAVEYARD_SHIFT_END) {
+          table_game_dict[key1].graveyard_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
+        }
+        else if (chunk >= exports.DAY_SHIFT_START && chunk < exports.DAY_SHIFT_END) {
+          table_game_dict[key1].day_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
+        }
+        else if (chunk >= exports.SWING_SHIFT_START || chunk < exports.SWING_SHIFT_END) {   // || because (18, 2)
+          table_game_dict[key1].swing_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
         }
 
         var key2 = rows[i]["game_desc"];
-        if (!game_dict.hasOwnProperty(key2)) {
+        if (!game_dict.hasOwnProperty(key2)) {  // first appearance of key2, initialize sums
           game_dict[key2] = {
             graveyard_tot_hours: [0, 0, 0, 0, 0, 0, 0], // 7 days of week (dow)
             day_tot_hours:       [0, 0, 0, 0, 0, 0, 0], // 7 days of week (dow)
             swing_tot_hours:     [0, 0, 0, 0, 0, 0, 0], // 7 days of week (dow)
           };
         }
-        else {
-          var chunk = rows[i]["day_chunk"];
-          var dow = rows[i]["dow"];
-          if (chunk >= exports.GRAVEYARD_SHIFT_START && chunk < exports.GRAVEYARD_SHIFT_END) {
-            game_dict[key2].graveyard_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
-          }
-          else if (chunk >= exports.DAY_SHIFT_START && chunk < exports.DAY_SHIFT_END) {
-            game_dict[key2].day_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
-          }
-          else if (chunk >= exports.SWING_SHIFT_START || chunk < exports.SWING_SHIFT_END) {   // || because (18, 2)
-            game_dict[key2].swing_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
-          }
+
+        var chunk = rows[i]["day_chunk"];
+        var dow = rows[i]["dow"];
+        if (chunk >= exports.GRAVEYARD_SHIFT_START && chunk < exports.GRAVEYARD_SHIFT_END) {
+          game_dict[key2].graveyard_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
+        }
+        else if (chunk >= exports.DAY_SHIFT_START && chunk < exports.DAY_SHIFT_END) {
+          game_dict[key2].day_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
+        }
+        else if (chunk >= exports.SWING_SHIFT_START || chunk < exports.SWING_SHIFT_END) {   // || because (18, 2)
+          game_dict[key2].swing_tot_hours[dow] += 1.0/exports.CHUNKS_PER_HOUR;
         }
       }
 
@@ -303,12 +301,11 @@ exports.fetchWeeklyGameHours = function(req, res){
         var key = rows[i]["game_desc"];
         var dow = rows[i]["dow"];
 
-        if (!game_dict.hasOwnProperty(key)) {
+        if (!game_dict.hasOwnProperty(key)) {  // first appearance of key, initialize sums
           game_dict[key] = [0, 0, 0, 0, 0, 0, 0]; // 7 days of week (dow)
         }
-        else {
-          game_dict[key][dow] += 1.0/exports.CHUNKS_PER_HOUR;
-        }
+
+        game_dict[key][dow] += 1.0/exports.CHUNKS_PER_HOUR;
       }
       var result = {game_dict: game_dict};
       res.json({"result":result});
