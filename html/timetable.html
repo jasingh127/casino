@@ -87,7 +87,7 @@
       /***************************************************************************
       // Automatically refresh the page if no user activity happens for some time
       ****************************************************************************/
-      var N_REFRESH_SECS = 120;
+      var N_REFRESH_SECS = 30;
       var last_refresh_time = new Date().getTime();
       $(document.body).bind("mousemove keypress", function(e) {
         last_refresh_time = new Date().getTime();
@@ -97,9 +97,9 @@
         if(new Date().getTime() - last_refresh_time >= N_REFRESH_SECS*1000) 
           window.location.reload(true);
         else 
-          setTimeout(refresh, 20000);
+          setTimeout(refresh, 10000);
       }
-      setTimeout(refresh, 20000);
+      setTimeout(refresh, 10000);
 
       /***************************************************************************
       // Show today's date in the input box
