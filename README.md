@@ -12,7 +12,10 @@ Then, open a terminal/command prompt, go to the folder with app.js file and type
 (this step will start the application app.js when testing locally)
 
 2. (option 2) ./node_modules/forever/bin/forever start node.js
-(this step will start the application app.js in deployment and monitor it continously. It will restart the app if it crashes. Check documentation at: https://github.com/foreverjs/forever. For example, to stop, type ./node_modules/forever/bin/forever stop node.js, to list all running applications that forever is monitoring, type ./node_modules/forever/bin/forever list)
+(this step will start the application app.js in deployment and monitor it continously. It will restart the app if it crashes. Check documentation at: https://github.com/foreverjs/forever. For example, 
+- to start, type ./node_modules/forever/bin/forever start app.js
+- to stop, type ./node_modules/forever/bin/forever stop app.js
+- to list all running applications that forever is monitoring, type ./node_modules/forever/bin/forever list)
 -------------------------
 Architecture/Other Notes:
 -------------------------
