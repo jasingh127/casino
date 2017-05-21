@@ -3,8 +3,16 @@
   /**
   Misc Utility constants and methods
   **/
+
+  // =====================================================================
+  // MODIFY THIS WHEN SETTING UP FOR THE FIRST TIME
+  // =====================================================================
+
+  db_server_ip_address = "10.0.0.97"  
   
-  db_server_address: "http://" + "10.0.0.97" + ":3000",
+  // =====================================================================
+
+  db_server_address: "http://" + db_server_ip_address + ":3000",
 
   array_bounds: function(data) {
     x_start = [];
