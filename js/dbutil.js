@@ -121,7 +121,7 @@ var DbUtil = {
           week_s_tot += s_tot[i];
         }
         var record = [
-          "{all}",
+          "{total}",
           "",
           week_g_tot.toFixed(1),
           "",
@@ -162,7 +162,7 @@ var DbUtil = {
 
         // push total game hours
         for (var key in data["result"].game_dict) {
-          var record = [key, "{all}"]; // game id, blank_space
+          var record = [key, "{total}"]; // game id, blank_space
           var g_tot = data["result"].game_dict[key].graveyard_tot_hours;
           var d_tot = data["result"].game_dict[key].day_tot_hours;
           var s_tot = data["result"].game_dict[key].swing_tot_hours;
@@ -176,7 +176,7 @@ var DbUtil = {
         }
 
         // calculate and push total hours
-        var record = ["{all}", "{all}"];
+        var record = ["{total}", "{total}"];
         for (var i=0; i < DAYS_IN_WEEK; i++) {
           var g_tot_sum = 0;
           var d_tot_sum = 0;
