@@ -38,8 +38,9 @@
         game_raw_data: null,
         picked_game: -1,                    // -1 means no game selected
         game_id_to_desc: {},
-        game_color_scale: ["gray", "aqua", "lime", "maroon", "purple", "red", 
-          "blue", "green", "olive", "azure", "beige", "gold", "navy", "plum", "yellow"],
+        // Note that the order of colors matches the order of games (few colors left for more games in future):
+        // ["Empty", "21BJ", "DHP", "BAC", "POKER", "3CP", "PGT"]
+        game_color_scale: ["gray", "navy", "DarkTurquoise", "DeepPink", "LightSalmon", "Tomato", "DarkOliveGreen", "maroon", "purple", "blue", "olive", "azure", "gold"],
         color_undefined: "white",
         default_game_chart_title_text: "Click and pick a game to start, pick empty to stop a game",
         prev_scroll_val: 0
