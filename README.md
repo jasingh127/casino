@@ -12,18 +12,18 @@ Then, open a terminal/command prompt, go to the folder with app.js file and type
 
 3. Change printer IP address in routes/index.js (printer_server_address towards the end of the file)
 
-4. Run the app. 
-
-(option 1) node app.js 
+4. Run the app by typing: node app.js 
 (this step will start the application app.js when testing locally)
 
-(option 2) On Mac/Linux, type ./node_modules/forever/bin/forever -a start app.js
-(this step will start the application app.js in deployment and monitor it continously. It will restart the app if it crashes. Check documentation at: https://github.com/foreverjs/forever. For example, 
-- to start, type ./node_modules/forever/bin/forever -a start app.js
-- to stop, type ./node_modules/forever/bin/forever stop app.js
-- to list all running applications that forever is monitoring, type ./node_modules/forever/bin/forever list
+5. If you want to run the app as a service on windows: 
 
-On Windows, type node node_modules/forever/bin/forever -a start app.js (i.e. preface forever command with node)
+There are free open-source ways of doing this, but we highly recommend installing AlwaysUp:
+
+https://www.coretechnologies.com/products/AlwaysUp/
+
+https://www.youtube.com/watch?v=4desRWHp4tY&t=9s
+
+It's free for 30 days and costs 50$ per license. It's extremely easy to use and seems quite robust and comes with many nice features (like emailing you the app activity).
 
 -------------------------
 Architecture/Other Notes:
