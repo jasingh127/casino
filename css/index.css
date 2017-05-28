@@ -7,11 +7,9 @@ body {
   display:inline-block;
   position:relative;
   padding:10px 20px;
-  border:2px solid #D2691E;
-  color:#D2691E;
-  font-family:'Dancing Script',serif;
-  font-style:italic;
-  font-size:30px;
+  border:2px solid #754200;
+  color:#754200;
+  font-size:25px; margin-top:0; color:#754200; font-weight:bold; font-family:Papyrus-Regular, Arial, Helvetica, sans-serif;;
   text-decoration:none;
   margin:20px auto;
   transition: color 0.4s
@@ -34,7 +32,7 @@ body {
   color:#eee
 }
 .fancy-btn:hover:after{  
-  border:2px solid #D2691E;
+  border:2px solid #754200;
   width: calc(100% - 10px);
   height: calc(100% + 10px); 
 }

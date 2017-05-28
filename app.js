@@ -81,6 +81,8 @@ printer.isPrinterConnected(function(response){
 // REST API
 ***************************************************************************/
 app.get('/', routes.index);
+app.get('/index_games', routes.index_games);
+app.get('/index_reports', routes.index_reports);
 app.get('/timetable', routes.timetable);
 app.get('/reports', routes.reports);
 app.get('/report1', routes.report1);

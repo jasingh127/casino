@@ -8,6 +8,14 @@ exports.index = function(req, res){
   res.sendFile('index.html', {root: __dirname + '/../html'});
 };
 
+exports.index_games = function(req, res){
+  res.sendFile('index_games.html', {root: __dirname + '/../html'});
+};
+
+exports.index_reports = function(req, res){
+  res.sendFile('index_reports.html', {root: __dirname + '/../html'});
+};
+
 exports.timetable = function(req, res){
   res.sendFile('timetable.html', {root: __dirname + '/../html'});
 };

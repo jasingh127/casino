@@ -15,9 +15,9 @@ div {
     max-width:none;
 }
 
-h1 { 
-	color:#D2691E;
-    font-family:'Dancing Script',serif;
-    font-style:italic;
-    font-size:30px;
-}
+h1{ font-size:25px; margin-top:0; color:#754200; font-weight:bold; font-family:Papyrus-Regular, Arial, Helvetica, sans-serif;}
+h2{ font-size:23px; color:#754200; font-weight:bold; font-family:Papyrus-Regular, Arial, Helvetica, sans-serif}
+h3{ font-size:21px; }
+h4{ font-size:19px; }
+h5{ font-size:17px; }
+h6{ font-size:15px; }
