@@ -154,6 +154,9 @@ function insertLegacyOccupancyData(start_date_str) {
   for (var i = 1; i <= N_TABLES; i++) {
     var table_str = ('0' + i).slice(-2);
 
+    // ****************************************************
+    // NOTE TODO BUG FIX: playdate2 is WRONG for the last day, use playdate instead and change the code...
+    // ****************************************************
     old_db.each("SELECT * FROM TIMES_TABLES WHERE tbl_num = ? AND playdate2 >= ?", 
       table_str, start_date_str,
       function(err, row) {
@@ -173,7 +176,7 @@ function insertLegacyOccupancyData(start_date_str) {
             game_id = 0;
           }
           if (game_id < 0) {
-            return;
+            continue;
           }
 
           var day_chunk = j;
