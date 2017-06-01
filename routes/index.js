@@ -238,7 +238,9 @@ exports.fetchWeeklyTableHoursSplit = function(req, res){
       var game_dict = {};  // indexed by game_id
       // Count number of hours of table play based on chunks accumulated (populate the two dicts)
       for (var i = 0; i < rows.length; i++) {
-        var key1 = rows[i]["table_id"] + ":" + rows[i]["game_desc"];
+        var table_id_int = rows[i]["table_id"];
+        var table_id_str = ('0' + table_id_int).slice(-2);
+        var key1 = table_id_str + ":" + rows[i]["game_desc"];
         if (!table_game_dict.hasOwnProperty(key1)) { // first appearance of key1, initialize sums
           table_game_dict[key1] = {
             graveyard_tot_hours: [0, 0, 0, 0, 0, 0, 0], // 7 days of week (dow)
