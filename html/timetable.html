@@ -77,7 +77,7 @@
   <br>
 </div>
 
-<div id="scrollable">
+<div id="occupancy_div" style="overflow: scroll;">
   <svg id="occupancy" width=200% height="600"></svg>
 </div>
 
@@ -141,13 +141,26 @@
 
       DbUtil.fetchGames(game_callback);
 
+      // Auto-scroll the occupancy table to bring the current time in the enter
+      var now = new Date();
+      var hours = now.getHours();
+      var scrollAmount = 0;
+      if (hours < 6)
+        scrollAmount = 0;
+      else if (hours <= 18)
+        scrollAmount = (hours - 6)*screen.width/12
+      else
+        scrollAmount = screen.width
+
+      $('#occupancy_div').scrollLeft(scrollAmount);
+
     });
     
     /***************************************************************************
     // Catching window scroll position
     ****************************************************************************/
-    $(window).scroll(function (event) {
-      timetable_data.prev_scroll_val = $(window).scrollLeft();
+    $('#occupancy_div').scroll(function (event) {
+      timetable_data.prev_scroll_val = $('#occupancy_div').scrollLeft();
     });
 
 

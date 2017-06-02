@@ -367,6 +367,8 @@ exports.print = function(req, res){
 
 exports.printHelper = function(date, event, table_id, game_desc, time){
   printer.clear()
+  printer.setTextDoubleHeight();
+  printer.setTextDoubleWidth();
   printer.bold(true);
   printer.alignCenter();
   printer.println("Casino San Pablo");
