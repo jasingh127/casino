@@ -89,20 +89,26 @@
     $(function() {
       /***************************************************************************
       // Automatically refresh the page if no user activity happens for some time
+      // Also refresh immediately whenever we cross a half hour boundary
       ****************************************************************************/
       var N_REFRESH_SECS = 30;
+      var POLL_SECONDS = 2;
+      var DAY_CHUNK_DURATION_MINS = 30
       var last_refresh_time = new Date().getTime();
       $(document.body).bind("mousemove keypress", function(e) {
         last_refresh_time = new Date().getTime();
       });
 
       function refresh() {
-        if(new Date().getTime() - last_refresh_time >= N_REFRESH_SECS*1000) 
+        var now = new Date()
+        if (now.getTime() - last_refresh_time >= N_REFRESH_SECS * 1000)
+          window.location.reload(true);
+        else if ((now.getMinutes() % DAY_CHUNK_DURATION_MINS  == 0) && (now.getSeconds() < POLL_SECONDS))
           window.location.reload(true);
         else 
-          setTimeout(refresh, 10000);
+          setTimeout(refresh, POLL_SECONDS * 1000);
       }
-      setTimeout(refresh, 10000);
+      setTimeout(refresh, POLL_SECONDS * 1000);
 
       /***************************************************************************
       // Show today's date in the input box
