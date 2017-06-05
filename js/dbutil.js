@@ -96,7 +96,8 @@ var DbUtil = {
         var s_avg = data["result"].swing_avg_hours;
         var DAYS_IN_WEEK = 7;
         var DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-        for (var i=0; i < DAYS_IN_WEEK; i++) {
+        for (var i_1=0; i_1 < DAYS_IN_WEEK; i_1++) {
+          var i = (i_1 + 1) % DAYS_IN_WEEK; // shift days left by 1 to get ["Mon", "Tue", ....] order since that was requested
           var record = [
             DAY_NAMES[i],
             g_avg[i].toFixed(1),
@@ -143,7 +144,6 @@ var DbUtil = {
       params,
       function(data, status){
         var DAYS_IN_WEEK = 7;
-        var DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
         var tbl_data = [];
         // push game hours per table
         for (var key in data["result"].table_game_dict) {
@@ -151,7 +151,8 @@ var DbUtil = {
           var g_tot = data["result"].table_game_dict[key].graveyard_tot_hours;
           var d_tot = data["result"].table_game_dict[key].day_tot_hours;
           var s_tot = data["result"].table_game_dict[key].swing_tot_hours;
-          for (var i=0; i < DAYS_IN_WEEK; i++) {
+          for (var i_1=0; i_1 < DAYS_IN_WEEK; i_1++) {
+            var i = (i_1 + 1) % DAYS_IN_WEEK; // shift days left by 1 to get ["Mon", "Tue", ....] order since that was requested
             record.push(g_tot[i] > 0.0 ? g_tot[i].toFixed(1): "");
             record.push(d_tot[i] > 0.0 ? d_tot[i].toFixed(1): "");
             record.push(s_tot[i] > 0.0 ? s_tot[i].toFixed(1): "");
@@ -166,7 +167,8 @@ var DbUtil = {
           var g_tot = data["result"].game_dict[key].graveyard_tot_hours;
           var d_tot = data["result"].game_dict[key].day_tot_hours;
           var s_tot = data["result"].game_dict[key].swing_tot_hours;
-          for (var i=0; i < DAYS_IN_WEEK; i++) {
+          for (var i_1=0; i_1 < DAYS_IN_WEEK; i_1++) {
+            var i = (i_1 + 1) % DAYS_IN_WEEK; // shift days left by 1 to get ["Mon", "Tue", ....] order since that was requested        
             record.push(g_tot[i] > 0.0 ? g_tot[i].toFixed(1): "");
             record.push(d_tot[i] > 0.0 ? d_tot[i].toFixed(1): "");
             record.push(s_tot[i] > 0.0 ? s_tot[i].toFixed(1): "");
@@ -177,7 +179,8 @@ var DbUtil = {
 
         // calculate and push total hours
         var record = ["{total}", "{total}"];
-        for (var i=0; i < DAYS_IN_WEEK; i++) {
+        for (var i_1=0; i_1 < DAYS_IN_WEEK; i_1++) {
+          var i = (i_1 + 1) % DAYS_IN_WEEK; // shift days left by 1 to get ["Mon", "Tue", ....] order since that was requested
           var g_tot_sum = 0;
           var d_tot_sum = 0;
           var s_tot_sum = 0;

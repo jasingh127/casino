@@ -26,7 +26,11 @@
       var end_date = null;
       var chart = null;
       var WEEK_NUM_DAYS = 6;  // end_day-start_day = 6, range is [start_day, end_day] inclusive
-      
+
+      var shift_left = function(a) {
+        return a.concat(a.splice(0, 1));
+      }
+
       // Hardcoded game colors for reports (will need to change if we add more games):
       // Ideally we should specify the game -> game color mapping in the database itself
       var game_to_color = {"Empty":"gray", "21BJ":"navy", "DHP":"DarkTurquoise", 
@@ -44,7 +48,7 @@
           // note that we need this because the set of games with hours > 0 might be different for each week
           for (var key in plot_data) {
             if (plot_data.hasOwnProperty(key)) {
-              chart.addSeries({name:key, color:game_to_color[key], data:plot_data[key]});
+              chart.addSeries({name:key, color:game_to_color[key], data:shift_left(plot_data[key])});
             }
           }
           var week_str = MiscUtil.date_to_str(start_date) + ' - ' + MiscUtil.date_to_str(end_date);
@@ -124,7 +128,7 @@
           text: 'Start - End'
         },
         xAxis: {
-          categories: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+          categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
           crosshair: true
         },
         yAxis: {
@@ -178,7 +182,7 @@
         // note that we need this because the set of games with hours > 0 might be different for each week
         for (var key in plot_data) {
           if (plot_data.hasOwnProperty(key)) {
-            chart.addSeries({name:key, color:game_to_color[key], data:plot_data[key]});
+            chart.addSeries({name:key, color:game_to_color[key], data:shift_left(plot_data[key])});
           }
         }
         var week_str = MiscUtil.date_to_str(start_date) + ' - ' + MiscUtil.date_to_str(end_date);

@@ -27,14 +27,18 @@
       var chart = null;
       var WEEK_NUM_DAYS = 6;  // end_day-start_day = 6, range is [start_day, end_day] inclusive
 
+      var shift_left = function(a) {
+        return a.concat(a.splice(0, 1));
+      }
+
     </script>
 
     <script>
       var common_tbl_refresh_helper = function() {
         var tbl_shift_refresh_callback = function(plot_data) {
-          chart.series[0].update({data: plot_data.g_avg});
-          chart.series[1].update({data: plot_data.d_avg});
-          chart.series[2].update({data: plot_data.s_avg});
+          chart.series[0].update({data: shift_left(plot_data.g_avg)});
+          chart.series[1].update({data: shift_left(plot_data.d_avg)});
+          chart.series[2].update({data: shift_left(plot_data.s_avg)});
           var week_str = MiscUtil.date_to_str(start_date) + ' - ' + MiscUtil.date_to_str(end_date);
           chart.subtitle.update({text: week_str});
         }
@@ -112,7 +116,7 @@
           text: 'Start - End'
         },
         xAxis: {
-          categories: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+          categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
           crosshair: true
         },
         yAxis: {
@@ -170,9 +174,9 @@
       // Fetch weekly table hours per shift report and show
       ****************************************************************************/
       var tbl_shift_refresh_callback = function(plot_data) {
-        chart.series[0].update({data: plot_data.g_avg});
-        chart.series[1].update({data: plot_data.d_avg});
-        chart.series[2].update({data: plot_data.s_avg});
+        chart.series[0].update({data: shift_left(plot_data.g_avg)});
+        chart.series[1].update({data: shift_left(plot_data.d_avg)});
+        chart.series[2].update({data: shift_left(plot_data.s_avg)});
         var week_str = MiscUtil.date_to_str(start_date) + ' - ' + MiscUtil.date_to_str(end_date);
         chart.subtitle.update({text: week_str});
       }
