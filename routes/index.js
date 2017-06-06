@@ -371,7 +371,7 @@ exports.printHelper = function(date, event, table_id, game_desc, time){
   printer.setTextDoubleWidth();
   printer.bold(true);
   printer.alignCenter();
-  printer.println("Casino San Pablo");
+  printer.println("Casino Elks Tower");
   printer.println("GAME CARD");
   printer.bold(false);
   printer.println(date);
